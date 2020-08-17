@@ -1,7 +1,6 @@
 import path from 'path';
 import express from 'express';
 import compression from 'compression';
-import * as WebSocket from 'ws';
 import * as http from 'http';
 import * as net from 'net';
 import fs from 'fs'
@@ -12,8 +11,6 @@ const port = 3040;
 const app = express();
 
 const server = http.createServer(app);
-
-const viewerServer = new WebSocket.Server({ noServer: true });
 
 app.use(compression());
 
