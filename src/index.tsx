@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as ReactDOM from "react-dom";
 
-export class Parent extends Component<{}, {}}> {
+export class Parent extends Component<{}, {}> {
   state = {}
 
   constructor(props: {}) {
