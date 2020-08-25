@@ -2,9 +2,7 @@ import path from 'path';
 import express from 'express';
 import compression from 'compression';
 import * as http from 'http';
-import * as net from 'net';
-import fs from 'fs'
-import url from 'url'
+import { liveBroadcasts, liveStreams } from '../youtube'
 
 const port = 3040;
 
@@ -28,6 +26,25 @@ app.all('*', (request, response, next) => {
 app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.get('/healthcheck', (_req, res) => res.send("Ok"));
+
+app.get('/youtube/streams', (_req, res) => {
+  liveStreams().then((streams) => {
+    res.json({
+      streams: streams
+    })
+  })
+})
+
+app.get('/youtube/broadcasts', (_req, res) => {
+  liveBroadcasts().then((events) => {
+    res.json({
+      broadcasts: events.filter((v) =>
+        v.privacyStatus === "public" &&
+        v.status === "ready" // && Math.abs(v.scheduledStartTime - Date.now()) < (24 * 60 * 60 * 1000)
+      )
+    })
+  })
+})
 
 server.listen(port, () => {
   if (process.env.NODE_ENV === "production") {
