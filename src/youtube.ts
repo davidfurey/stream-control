@@ -33,48 +33,53 @@ function storeToken(token: Credentials): void {
   });
 }
 
-type LivecycleStatus = "complete" |
-  "created" |
-  "live" |
-  "liveStarting" |
-  "ready" |
-  "revoked" |
-  "testStarting" |
-  "testing"
+const ALL_LIFECYCLE_STATUSES = <const> [
+  "complete",
+  "created",
+  "live",
+  "liveStarting",
+  "ready",
+  "revoked",
+  "testStarting",
+  "testing"];
+
+export type LifecycleStatus = typeof ALL_LIFECYCLE_STATUSES[number]
 
 type PrivacyStatus = "private" |
   "public" |
   "unlisted"
 
-
-interface LiveBroadcast {
+export interface LiveBroadcast {
+  id: string;
   scheduledStartTime: number;
   title: string;
-  status: LivecycleStatus;
+  status: LifecycleStatus;
   privacyStatus: PrivacyStatus;
 }
 
-type StreamStatus = "active" |
+export type StreamStatus = "active" |
   "created" |
   "error" |
   "inactive" |
   "ready"
 
-interface LiveStream {
+export interface LiveStream {
   status: StreamStatus;
   title: string;
   id: string;
+  healthStatus: HealthStatus;
 }
 
-function isLivecycleStatus(s: string): s is LivecycleStatus {
-  return s === "complete" ||
-    s === "created" ||
-    s === "live" ||
-    s === "liveStarting" ||
-    s === "ready" ||
-    s === "revoked" ||
-    s === "testStarting" ||
-    s === "testing"
+const ALL_HEALTH_STATUSES = <const> [
+  "good",
+  "ok",
+  "bad",
+  "noData"];
+
+export type HealthStatus = typeof ALL_HEALTH_STATUSES[number]
+
+function isLivecycleStatus(s: string): s is LifecycleStatus {
+  return (ALL_LIFECYCLE_STATUSES as ReadonlyArray<string>).includes(s)
 }
 
 function isPrivacyStatus(s: string): s is PrivacyStatus {
@@ -91,6 +96,9 @@ function isStreamStatus(s: string): s is StreamStatus {
     s === "ready"
 }
 
+function isHealthStatus(s: string): s is HealthStatus {
+  return (ALL_HEALTH_STATUSES as ReadonlyArray<string>).includes(s)
+}
 
 /**
  * Get and store new token after prompting for user authorization, and then
@@ -184,12 +192,16 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
     broadcastStatus: "upcoming"
   }).then((response) => {
     const data = response.data.items;
+    console.log(JSON.stringify(response.data))
     return data?.flatMap((item) => {
+      //item.contentDetails?.boundStreamId
+      const id = item.id
       const scheduledStartTime = item.snippet?.scheduledStartTime
       const title = item.snippet?.title
       const lifeCycleStatus = item.status?.lifeCycleStatus
       const privacyStatus = item.status?.privacyStatus
-      if (scheduledStartTime &&
+      if (id &&
+        scheduledStartTime &&
         title &&
         lifeCycleStatus &&
         isLivecycleStatus(lifeCycleStatus) &&
@@ -197,6 +209,7 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
         isPrivacyStatus(privacyStatus)
       ) {
         const r: LiveBroadcast = {
+          id,
           scheduledStartTime: Date.parse(scheduledStartTime),
           title,
           status: lifeCycleStatus,
@@ -220,7 +233,9 @@ export const liveStreams: () => Promise<LiveStream[]> =
     auth: auth,
   }).then((response) => {
     const data = response.data.items;
+    console.log(JSON.stringify(response.data))
     return data?.flatMap((item) => {
+      //item.status?.healthStatus?.status
       if (
         item.id &&
         item.snippet?.title &&
@@ -231,6 +246,7 @@ export const liveStreams: () => Promise<LiveStream[]> =
           title: item.snippet?.title,
           status: item.status?.streamStatus,
           id: item.id,
+          healthStatus: item.status?.healthStatus?.status && isHealthStatus(item.status?.healthStatus?.status) ? item.status?.healthStatus?.status : "noData"
         }
         return [r];
       } else {

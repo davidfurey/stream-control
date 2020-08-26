@@ -29,6 +29,7 @@ app.get('/healthcheck', (_req, res) => res.send("Ok"));
 
 app.get('/youtube/streams', (_req, res) => {
   liveStreams().then((streams) => {
+    res.header("Access-Control-Allow-Origin", '*')
     res.json({
       streams: streams
     })
@@ -37,6 +38,7 @@ app.get('/youtube/streams', (_req, res) => {
 
 app.get('/youtube/broadcasts', (_req, res) => {
   liveBroadcasts().then((events) => {
+    res.header("Access-Control-Allow-Origin", '*')
     res.json({
       broadcasts: events.filter((v) =>
         v.privacyStatus === "public" &&
