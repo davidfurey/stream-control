@@ -45,9 +45,12 @@ const ALL_LIFECYCLE_STATUSES = <const> [
 
 export type LifecycleStatus = typeof ALL_LIFECYCLE_STATUSES[number]
 
-type PrivacyStatus = "private" |
-  "public" |
-  "unlisted"
+const ALL_PRIVACY_STATUSES = <const> [
+  "private",
+  "public",
+  "unlisted"];
+
+export type PrivacyStatus = typeof ALL_PRIVACY_STATUSES[number]
 
 export interface LiveBroadcast {
   id: string;
@@ -57,11 +60,14 @@ export interface LiveBroadcast {
   privacyStatus: PrivacyStatus;
 }
 
-export type StreamStatus = "active" |
-  "created" |
-  "error" |
-  "inactive" |
-  "ready"
+const ALL_STREAM_STATUSES = <const> [
+  "active",
+  "created",
+  "error",
+  "inactive",
+  "ready"];
+
+export type StreamStatus = typeof ALL_STREAM_STATUSES[number]
 
 export interface LiveStream {
   status: StreamStatus;
@@ -83,17 +89,11 @@ function isLivecycleStatus(s: string): s is LifecycleStatus {
 }
 
 function isPrivacyStatus(s: string): s is PrivacyStatus {
-  return s === "private" ||
-    s === "public" ||
-    s === "unlisted"
+  return (ALL_PRIVACY_STATUSES as ReadonlyArray<string>).includes(s)
 }
 
 function isStreamStatus(s: string): s is StreamStatus {
-  return s === "active" ||
-    s === "created" ||
-    s === "error" ||
-    s === "inactive" ||
-    s === "ready"
+  return (ALL_STREAM_STATUSES as ReadonlyArray<string>).includes(s)
 }
 
 function isHealthStatus(s: string): s is HealthStatus {
