@@ -3,11 +3,26 @@ import readline from 'readline'
 import { google, Common, Auth } from 'googleapis'
 import { Credentials } from 'google-auth-library';
 import 'array-flat-polyfill';
+import { Readable, ReadableOptions } from "stream";
+
+export class BufferStream extends Readable {
+  _object: Buffer | null;
+  constructor(object: Buffer, options: ReadableOptions = {}) {
+    super(options);
+    this._object = object;
+  }
+  _read = (): void => {
+    this.push(this._object);
+    this._object = null;
+  };
+}
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/youtube-nodejs-quickstart.json
 
-const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/youtube'
+];
 
 const TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
@@ -189,7 +204,7 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
   google.youtube('v3').liveBroadcasts.list({
     part: ['id', 'snippet', 'contentDetails', 'status'],
     auth: auth,
-    broadcastStatus: "upcoming"
+    broadcastStatus: "all"
   }).then((response) => {
     const data = response.data.items;
     console.log(JSON.stringify(response.data))
@@ -223,6 +238,65 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
   })
 )
 
+function addThumbnail(
+  videoId: string,
+  auth: Common.OAuth2Client,
+  thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer}
+): Promise<string> {
+  if (videoId) {
+    return google.youtube('v3').thumbnails.set({
+      videoId,
+      media: {
+        mimeType: thumbnail.mimeType,
+        body: new BufferStream(thumbnail.data)
+      },
+      auth: auth
+    }).then((response) => {
+      console.log(JSON.stringify(response))
+      return videoId
+    }).catch((error) => {
+      console.log(JSON.stringify(error))
+      return Promise.resolve("error")
+    })
+  }
+  return Promise.resolve("error")
+}
+
+export function createLiveStream(
+  title: string,
+  description: string,
+  thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
+  scheduledStartTime: Date
+): Promise<string> {
+  return withAuth((auth: Common.OAuth2Client) =>
+  google.youtube('v3').liveBroadcasts.insert({
+    part: [
+      "snippet",
+      "status",
+      "content_details"
+    ],
+    requestBody: {
+      snippet: {
+        title,
+        description,
+        scheduledStartTime: scheduledStartTime.toISOString(),
+      },
+      status: {
+        privacyStatus: "private",
+        selfDeclaredMadeForKids: false,
+      },
+      contentDetails: {
+        enableAutoStart: false,
+        enableAutoStop: false,
+      }
+    },
+    auth: auth,
+  }).then((response) => {
+    return addThumbnail(response.data.id || "", auth, thumbnail)
+  })
+)()
+}
+
 export const liveStreams: () => Promise<LiveStream[]> =
   withAuth((auth: Common.OAuth2Client) =>
   google.youtube('v3').liveStreams.list({
@@ -233,7 +307,6 @@ export const liveStreams: () => Promise<LiveStream[]> =
     auth: auth,
   }).then((response) => {
     const data = response.data.items;
-    console.log(JSON.stringify(response.data))
     return data?.flatMap((item) => {
       //item.status?.healthStatus?.status
       if (

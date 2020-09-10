@@ -48,6 +48,24 @@ app.get('/youtube/broadcasts', (_req, res) => {
   })
 })
 
+app.post('/youtube/create', (_req, res) => {
+  fs.readFile('/home/david/Downloads/0_Welcome.jpg', function(err, data) {
+    if (err) {
+      res.send("Error reading thumbnail")
+    } else {
+      createLiveStream(
+        "Test Stream 2",
+        "Test description 2",
+        {
+          mimeType: "image/jpeg",
+          data: data
+        },
+        new Date()
+      ).then((r) => res.send(`response is ${r}`))
+    }
+  })
+})
+
 server.listen(port, () => {
   if (process.env.NODE_ENV === "production") {
     console.log(`Server listening on port ${port}!`);
