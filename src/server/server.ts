@@ -2,7 +2,8 @@ import path from 'path';
 import express from 'express';
 import compression from 'compression';
 import * as http from 'http';
-import { liveBroadcasts, liveStreams } from '../youtube'
+import { liveBroadcasts, liveStreams, createLiveStream, justThumbnail } from '../youtube'
+import fs from 'fs'
 
 const port = 3040;
 
@@ -41,8 +42,8 @@ app.get('/youtube/broadcasts', (_req, res) => {
     res.header("Access-Control-Allow-Origin", '*')
     res.json({
       broadcasts: events.filter((v) =>
-        v.privacyStatus === "public" &&
-        v.status === "ready" // && Math.abs(v.scheduledStartTime - Date.now()) < (24 * 60 * 60 * 1000)
+        v.privacyStatus === "public"
+        // && Math.abs(v.scheduledStartTime - Date.now()) < (24 * 60 * 60 * 1000)
       )
     })
   })

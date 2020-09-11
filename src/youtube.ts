@@ -262,7 +262,7 @@ function addThumbnail(
   return Promise.resolve("error")
 }
 
-export function createLiveStream(
+export function createLiveBroadcast(
   title: string,
   description: string,
   thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
@@ -293,6 +293,42 @@ export function createLiveStream(
     auth: auth,
   }).then((response) => {
     return addThumbnail(response.data.id || "", auth, thumbnail)
+  })
+)()
+}
+
+export function updateLiveBroadcast(
+  id: string,
+  title: string,
+  description: string,
+  scheduledStartTime: Date
+): Promise<string> {
+  return withAuth((auth: Common.OAuth2Client) =>
+  google.youtube('v3').liveBroadcasts.update({
+    part: [
+      "snippet",
+      "status",
+      "content_details"
+    ],
+    requestBody: {
+      id,
+      snippet: {
+        title,
+        description,
+        scheduledStartTime: scheduledStartTime.toISOString(),
+      },
+      status: {
+        privacyStatus: "private",
+        selfDeclaredMadeForKids: false,
+      },
+      contentDetails: {
+        enableAutoStart: false,
+        enableAutoStop: false,
+      }
+    },
+    auth: auth,
+  }).then((response) => {
+    return response.status.toString()
   })
 )()
 }
@@ -328,3 +364,47 @@ export const liveStreams: () => Promise<LiveStream[]> =
     }) || []
   })
 )
+
+export function liveBroadcast(
+  id: string
+): Promise<LiveBroadcast | null> {
+  return withAuth((auth: Common.OAuth2Client) =>
+    google.youtube('v3').liveBroadcasts.list({
+      part: ['id', 'snippet', 'contentDetails', 'status'],
+      id: [ id ],
+      auth: auth,
+      broadcastStatus: "all"
+    }).then((response) => {
+      const data = response.data.items;
+      if (data && data.length === 1) {
+        const item = data[0]
+        const id = item.id
+        const scheduledStartTime = item.snippet?.scheduledStartTime
+        const title = item.snippet?.title
+        const lifeCycleStatus = item.status?.lifeCycleStatus
+        const privacyStatus = item.status?.privacyStatus
+        if (id &&
+          scheduledStartTime &&
+          title &&
+          lifeCycleStatus &&
+          isLivecycleStatus(lifeCycleStatus) &&
+          privacyStatus &&
+          isPrivacyStatus(privacyStatus)
+        ) {
+          const r: LiveBroadcast = {
+            id,
+            scheduledStartTime: Date.parse(scheduledStartTime),
+            title,
+            status: lifeCycleStatus,
+            privacyStatus
+          }
+          return r;
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    })
+    )()
+}
