@@ -305,7 +305,8 @@ export function createLiveBroadcast(
         id: response.data.id,
         snippet: {
           categoryId: "22", // People and Blogs
-          title
+          title,
+          description
         },
         status: {
           selfDeclaredMadeForKids: false
