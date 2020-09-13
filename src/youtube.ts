@@ -71,6 +71,7 @@ export interface LiveBroadcast {
   id: string;
   scheduledStartTime: number;
   title: string;
+  description: string;
   status: LifecycleStatus;
   privacyStatus: PrivacyStatus;
 }
@@ -207,12 +208,15 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
     broadcastStatus: "all"
   }).then((response) => {
     const data = response.data.items;
-    console.log(JSON.stringify(response.data))
+    console.log(`total: ${response.data.pageInfo?.totalResults}`)
+    console.log(`items: ${response.data.items?.length}`)
     return data?.flatMap((item) => {
+      console.log("COUNT")
       //item.contentDetails?.boundStreamId
       const id = item.id
       const scheduledStartTime = item.snippet?.scheduledStartTime
       const title = item.snippet?.title
+      const description = item.snippet?.description
       const lifeCycleStatus = item.status?.lifeCycleStatus
       const privacyStatus = item.status?.privacyStatus
       if (id &&
@@ -223,10 +227,12 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
         privacyStatus &&
         isPrivacyStatus(privacyStatus)
       ) {
+        console.log("GOOD")
         const r: LiveBroadcast = {
           id,
           scheduledStartTime: Date.parse(scheduledStartTime),
           title,
+          description: description || "",
           status: lifeCycleStatus,
           privacyStatus
         }
@@ -266,7 +272,8 @@ export function createLiveBroadcast(
   title: string,
   description: string,
   thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
-  scheduledStartTime: Date
+  scheduledStartTime: Date,
+  privacyStatus?: "public" | "private",
 ): Promise<string> {
   return withAuth((auth: Common.OAuth2Client) =>
   google.youtube('v3').liveBroadcasts.insert({
@@ -282,7 +289,7 @@ export function createLiveBroadcast(
         scheduledStartTime: scheduledStartTime.toISOString(),
       },
       status: {
-        privacyStatus: "private",
+        privacyStatus: privacyStatus || "private",
         selfDeclaredMadeForKids: false,
       },
       contentDetails: {
@@ -292,6 +299,20 @@ export function createLiveBroadcast(
     },
     auth: auth,
   }).then((response) => {
+    google.youtube('v3').videos.update({
+      part: [ "snippet", "status" ],
+      requestBody: {
+        id: response.data.id,
+        snippet: {
+          categoryId: "22", // People and Blogs
+          title
+        },
+        status: {
+          selfDeclaredMadeForKids: false
+        }
+      },
+      auth
+    })
     return addThumbnail(response.data.id || "", auth, thumbnail)
   })
 )()
@@ -307,7 +328,6 @@ export function updateLiveBroadcast(
   google.youtube('v3').liveBroadcasts.update({
     part: [
       "snippet",
-      "status",
       "content_details"
     ],
     requestBody: {
@@ -316,10 +336,6 @@ export function updateLiveBroadcast(
         title,
         description,
         scheduledStartTime: scheduledStartTime.toISOString(),
-      },
-      status: {
-        privacyStatus: "private",
-        selfDeclaredMadeForKids: false,
       },
       contentDetails: {
         enableAutoStart: false,
@@ -372,8 +388,7 @@ export function liveBroadcast(
     google.youtube('v3').liveBroadcasts.list({
       part: ['id', 'snippet', 'contentDetails', 'status'],
       id: [ id ],
-      auth: auth,
-      broadcastStatus: "all"
+      auth: auth
     }).then((response) => {
       const data = response.data.items;
       if (data && data.length === 1) {
@@ -381,11 +396,13 @@ export function liveBroadcast(
         const id = item.id
         const scheduledStartTime = item.snippet?.scheduledStartTime
         const title = item.snippet?.title
+        const description = item.snippet?.description
         const lifeCycleStatus = item.status?.lifeCycleStatus
         const privacyStatus = item.status?.privacyStatus
         if (id &&
           scheduledStartTime &&
           title &&
+          description &&
           lifeCycleStatus &&
           isLivecycleStatus(lifeCycleStatus) &&
           privacyStatus &&
@@ -395,6 +412,7 @@ export function liveBroadcast(
             id,
             scheduledStartTime: Date.parse(scheduledStartTime),
             title,
+            description,
             status: lifeCycleStatus,
             privacyStatus
           }

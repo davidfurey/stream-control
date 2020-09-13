@@ -2,8 +2,10 @@ import path from 'path';
 import express from 'express';
 import compression from 'compression';
 import * as http from 'http';
-import { liveBroadcasts, liveStreams, createLiveStream, justThumbnail } from '../youtube'
+import { liveBroadcasts, liveStreams, createLiveBroadcast, liveBroadcast } from '../youtube'
+import { listWeekdays } from '../spreadsheet'
 import fs from 'fs'
+import { createEvents } from './create-events';
 
 const port = 3040;
 
@@ -42,10 +44,39 @@ app.get('/youtube/broadcasts', (_req, res) => {
     res.header("Access-Control-Allow-Origin", '*')
     res.json({
       broadcasts: events.filter((v) =>
-        v.privacyStatus === "public"
+        v.privacyStatus === "public" || v.privacyStatus !== null
         // && Math.abs(v.scheduledStartTime - Date.now()) < (24 * 60 * 60 * 1000)
       )
     })
+  })
+})
+
+app.get('/spreadsheet/weekdays', (_req, res) => {
+  listWeekdays().then((result) => {
+    res.header("Access-Control-Allow-Origin", '*')
+    res.json(result)
+  })
+})
+
+app.get('/spreadsheet/compare', (_req, res) => {
+  listWeekdays().then((result) => {
+    res.header("Access-Control-Allow-Origin", '*')
+    result.filter((r) => r.eventId !== "").map((r) => {
+      liveBroadcast(r.eventId).then((evt) => {
+        console.log("Spreadsheet")
+        if (r.eventName === evt?.title) {
+          console.log("Title matches")
+        }
+        if (r.description === evt?.description) {
+          console.log("Description matches")
+        }
+        if (r.scheduledStartTime.getTime() === evt?.scheduledStartTime) {
+          console.log("Start time matches")
+        }
+        evt
+      })
+    })
+    res.json(result)
   })
 })
 
@@ -54,7 +85,7 @@ app.post('/youtube/create', (_req, res) => {
     if (err) {
       res.send("Error reading thumbnail")
     } else {
-      createLiveStream(
+      createLiveBroadcast(
         "Test Stream 2",
         "Test description 2",
         {
@@ -65,6 +96,11 @@ app.post('/youtube/create', (_req, res) => {
       ).then((r) => res.send(`response is ${r}`))
     }
   })
+})
+
+app.post('/general/create-events', (_req, res) => {
+  createEvents()
+  res.send("ACCEPTED")
 })
 
 server.listen(port, () => {
