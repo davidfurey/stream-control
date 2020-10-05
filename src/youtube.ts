@@ -220,11 +220,7 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
     maxResults: 20,
   }).then((response) => {
     const data = response.data.items;
-    console.log(`total: ${response.data.pageInfo?.totalResults}`)
-    console.log(`items: ${response.data.items?.length}`)
     return (data?.flatMap((item) => {
-      console.log("COUNT")
-      //item.contentDetails?.boundStreamId
       const id = item.id
       const scheduledStartTime = item.snippet?.scheduledStartTime
       const title = item.snippet?.title
@@ -240,8 +236,6 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
         privacyStatus &&
         isPrivacyStatus(privacyStatus)
       ) {
-        console.log("GOOD")
-        console.log(JSON.stringify(item))
         const r: LiveBroadcast = {
           id,
           scheduledStartTime: Date.parse(scheduledStartTime),
@@ -305,7 +299,7 @@ export function createLiveBroadcast(
         scheduledStartTime: scheduledStartTime.toISOString(),
       },
       status: {
-        privacyStatus: "private" || privacyStatus || "private",
+        privacyStatus: privacyStatus || "private",
         selfDeclaredMadeForKids: false,
       },
       contentDetails: {

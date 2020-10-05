@@ -2,14 +2,14 @@ import path from 'path';
 import express from 'express';
 import compression from 'compression';
 import * as http from 'http';
-import { liveBroadcasts, liveStreams } from '../youtube'
+import { liveBroadcasts, liveStreams, updateBroadcastStatus } from '../youtube'
 import { SpreadsheetEventStore } from '../SpreadsheetEventStore'
 import { createEvents, validateEvents } from './create-events';
 import { setScene, startStreaming, stopStreaming, setSceneCollection } from '../obs';
 import { EventRunner } from '../eventrunner'
 import { SpreadsheetScheduleStore } from '../SpreadsheetScheduleStore';
 import { SpreadsheetStatusStore } from '../SpreadsheetStatusStore';
-import { scheduleTasks } from '../scheduled_tasks';
+// import { scheduleTasks } from '../scheduled_tasks';
 
 const port = 3040;
 
@@ -25,11 +25,11 @@ const statusStore = new SpreadsheetStatusStore()
 
 statusStore.reportAppStarted(new Date())
 
-scheduleTasks({
-  events: eventStore,
-  schedules: scheduleStore,
-  status: statusStore
-})
+// scheduleTasks({
+//   events: eventStore,
+//   schedules: scheduleStore,
+//   status: statusStore
+// })
 
 app.all('*', (request, response, next) => {
     const start = Date.now();
@@ -67,6 +67,18 @@ app.get('/youtube/broadcasts', (_req, res) => {
   })
 })
 
+app.get('/youtube/upcoming', (_req, res) => {
+  liveBroadcasts().then((events) => {
+    res.header("Access-Control-Allow-Origin", '*')
+    res.json({
+      broadcasts: events.filter((v) =>
+        v.status !== "revoked" && v.status !== "complete"
+        // && Math.abs(v.scheduledStartTime - Date.now()) < (24 * 60 * 60 * 1000)
+      )
+    })
+  })
+})
+
 // app.post('/youtube/create', (_req, res) => {
 //   fs.readFile('/home/david/Downloads/0_Welcome.jpg', function(err, data) {
 //     if (err) {
@@ -85,12 +97,18 @@ app.get('/youtube/broadcasts', (_req, res) => {
 //   })
 // })
 
-// app.post('/youtube/live', (_req, res) => {
-//   startYoutubeStreaming('5MWJsh2lSbw').then((r) => {
-//     console.log(r)
-//   })
-//   res.send("OK")
-// })
+app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
+  const eventId = req.params['eventId']
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const status = (req.params['status'] as any)
+  res.header("Access-Control-Allow-Origin", '*')
+  updateBroadcastStatus(eventId, status).then(() => {
+    res.send("OK")
+  }).catch((e) => {
+    console.error(`Failed to set status of event ${eventId} to ${status} (${e})`)
+    res.status(500).send(`Failed to set status of event ${eventId} to ${status} (${e})`)
+  })
+})
 
 // process.on(
 // 	"unhandledRejection",
