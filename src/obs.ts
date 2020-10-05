@@ -2,7 +2,7 @@ import OBSWebSocket from 'obs-websocket-js';
 
 const obs = new OBSWebSocket();
 
-obs.connect({ address: 'localhost:4444' });
+//obs.connect({ address: 'localhost:4444' });
 
 function connected(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
