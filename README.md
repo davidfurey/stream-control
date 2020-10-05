@@ -1,7 +1,8 @@
-Stream automation
-=================
+Stream control
+==============
 
-Automatically start streaming based on events
+Automatically start streaming based on events.  Also allow manual control of
+starting/stopping Youtube events without giving full control of Youtube console
 
 Dev setup
 ---------
