@@ -30,7 +30,7 @@ export function createEvents(scheduleStore: ScheduleStore, eventStore: EventStor
                   thumbnail,
                   d.scheduledStartTime,
                   d.streamId,
-                  "private"
+                  "public"
                 ).then((youtubeId) => {
                   scheduleStore.setYoutubeId(schedule, d.rowNumber, youtubeId)
                   if (d.automated) {
