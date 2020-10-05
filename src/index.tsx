@@ -20,7 +20,7 @@ export class Parent extends Component<{}, ParentState> {
 
   constructor(props: {}) {
     super(props)
-    fetch('http://localhost:3040/youtube/upcoming').then((response) => {
+    fetch('/stream-control/youtube/upcoming').then((response) => {
       if (response.status >= 200 || response.status < 300) {
         response.json().then((body) => {
           const parsed: LiveBroadcast[] = body.broadcasts
@@ -37,7 +37,7 @@ export class Parent extends Component<{}, ParentState> {
     }).catch((e) => {
       throw new Error(`Failed to fetch broadcasts. Exception: ${e}`);
     })
-    fetch('http://localhost:3040/youtube/streams').then((response) => {
+    fetch('/stream-control/youtube/streams').then((response) => {
       if (response.status >= 200 || response.status < 300) {
         response.json().then((body) =>
           this.setState((prev => {
@@ -55,7 +55,7 @@ export class Parent extends Component<{}, ParentState> {
     })
 
     setInterval(() => {
-      fetch('http://localhost:3040/youtube/upcoming').then((response) => {
+      fetch('/stream-control/youtube/upcoming').then((response) => {
         if (response.status >= 200 || response.status < 300) {
           response.json().then((body) => {
             const parsed: LiveBroadcast[] = body.broadcasts
@@ -72,7 +72,7 @@ export class Parent extends Component<{}, ParentState> {
       }).catch((e) => {
         throw new Error(`Failed to fetch broadcasts. Exception: ${e}`);
       })
-      fetch('http://localhost:3040/youtube/streams').then((response) => {
+      fetch('/stream-control/youtube/streams').then((response) => {
         if (response.status >= 200 || response.status < 300) {
           response.json().then((body) =>
             this.setState((prev => {
