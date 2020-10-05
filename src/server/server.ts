@@ -48,7 +48,6 @@ app.get('/healthcheck', (_req, res) => res.send("Ok"));
 
 app.get('/youtube/streams', (_req, res) => {
   liveStreams().then((streams) => {
-    res.header("Access-Control-Allow-Origin", '*')
     res.json({
       streams: streams
     })
@@ -57,7 +56,6 @@ app.get('/youtube/streams', (_req, res) => {
 
 app.get('/youtube/broadcasts', (_req, res) => {
   liveBroadcasts().then((events) => {
-    res.header("Access-Control-Allow-Origin", '*')
     res.json({
       broadcasts: events.filter((v) =>
         v.privacyStatus === "public" || v.privacyStatus !== null
@@ -69,7 +67,6 @@ app.get('/youtube/broadcasts', (_req, res) => {
 
 app.get('/youtube/upcoming', (_req, res) => {
   liveBroadcasts().then((events) => {
-    res.header("Access-Control-Allow-Origin", '*')
     res.json({
       broadcasts: events.filter((v) =>
         v.status !== "revoked" && v.status !== "complete"
@@ -101,7 +98,6 @@ app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
   const eventId = req.params['eventId']
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const status = (req.params['status'] as any)
-  res.header("Access-Control-Allow-Origin", '*')
   updateBroadcastStatus(eventId, status).then(() => {
     res.send("OK")
   }).catch((e) => {
