@@ -1,8 +1,7 @@
 import fs from 'fs'
 import readline from 'readline'
-import { google, Common, Auth } from 'googleapis'
+import { Common, Auth } from 'googleapis'
 import { Credentials } from 'google-auth-library';
-import { Duration , duration } from 'moment';
 import { tz } from 'moment-timezone';
 
 // If modifying these scopes, delete token.json.
@@ -105,7 +104,7 @@ function authorize<T>(
   });
 }
 
-function withAuth<T>(fn: (auth: Common.OAuth2Client) => Promise<T>): () => Promise<T> {
+export function withAuth<T>(fn: (auth: Common.OAuth2Client) => Promise<T>): () => Promise<T> {
   // Load client secrets from a local file.
   return (): Promise<T> => new Promise<T>((resolve, reject) => {
     fs.readFile('client_secret.json', function processClientSecrets(err, content) {
@@ -119,91 +118,13 @@ function withAuth<T>(fn: (auth: Common.OAuth2Client) => Promise<T>): () => Promi
   })
 }
 
-type DayOfWeek =
-  "Mon" |
-  "Tue" |
-  "Wed" |
-  "Thu" |
-  "Fri" |
-  "Sat" |
-  "Sun"
-
-type CreationState =
-  "Creation overdue" | "okay"
-
-interface Event {
-  rowNumber: number;
-  eventName: string;
-  thumbnail: string;
-  description: string;
-  scheduledStartTime: Date;
-  dayOfWeek: DayOfWeek;
-  automated: boolean;
-  maxLength: Duration;
-  template: string;
-  eventId: string;
-  sheetId: string;
-  scheduledCreationTime: Date;
-  firstEventTime: Date;
-  lastestEndTime: Date;
-  scheduledActive: boolean;
-  creationState: CreationState;
-}
-
-function dateFromSerial(serialNum: number): Date {
+export function dateFromSerial(serialNum: number): Date {
   const millis = Math.round((serialNum - 25569) * 86400 * 1000)
   const offset = tz.zone('Europe/London')?.utcOffset(millis) || 0;
   return new Date(millis + offset * 60 * 1000)
 }
 
-export const listWeekdays: () => Promise<Event[]> =
-  withAuth((auth: Common.OAuth2Client) => {
-    const sheets = google.sheets({version: 'v4', auth});
-    return sheets.spreadsheets.values.get({
-      spreadsheetId: '***REMOVED***',
-      range: 'Weekday Mass!A2:O',
-      valueRenderOption: 'UNFORMATTED_VALUE'
-    }).then((res) => {
-      const rows = res.data.values;
-      if (rows?.length && rows?.length > 0) {
-        return rows.map((row, index) => {
-          return {
-            rowNumber: index + 1,
-            eventName: row[0],
-            thumbnail: row[1],
-            description: row[2],
-            scheduledStartTime: dateFromSerial(row[3]),
-            dayOfWeek: row[4],
-            automated: row[5],
-            maxLength: duration(row[6] * 24 * 60 * 60 * 1000),
-            template: row[7],
-            eventId: row[8],
-            sheetId: row[9],
-            scheduledCreationTime: dateFromSerial(row[10]),
-            firstEventTime: dateFromSerial(row[11]),
-            lastestEndTime: dateFromSerial(row[12]),
-            scheduledActive: row[13],
-            creationState: row[14]
-          }
-        });
-      }
-      console.log('No data found.');
-      throw "No data found"
-    });
-  })
-
-export function setYoutubeId(row: number, id: string): Promise<string> {
-  console.log("Set youtube id")
-  return withAuth((auth: Common.OAuth2Client) => {
-    const sheets = google.sheets({version: 'v4', auth});
-    return sheets.spreadsheets.values.update({
-      spreadsheetId: '***REMOVED***',
-      range: `Weekday Mass!I${row+1}`,
-      valueInputOption: 'RAW',
-      requestBody: {
-        range: `Weekday Mass!I${row+1}`,
-        values: [ [ id ] ],
-      }
-    }).then((response) => response.statusText)
-  })()
+export function serialFromDate(date: Date): number {
+  const offset = tz.zone('Europe/London')?.utcOffset(date.getTime()) || 0;
+  return (date.getTime() / 1000 - offset * 60) / 86400 + 25569
 }

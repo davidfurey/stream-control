@@ -5,6 +5,16 @@ import { Credentials } from 'google-auth-library';
 import 'array-flat-polyfill';
 import { Readable, ReadableOptions } from "stream";
 
+// todo:
+// - connect Youtube to my channel for testing
+// - control OBS
+//  - correct scene colleciton
+//  - correct scene
+//  - streaming on/off
+// - background process
+// - transition broadcast to streaming
+// - transition broadcast to stop streaming
+
 export class BufferStream extends Readable {
   _object: Buffer | null;
   constructor(object: Buffer, options: ReadableOptions = {}) {
@@ -74,6 +84,7 @@ export interface LiveBroadcast {
   description: string;
   status: LifecycleStatus;
   privacyStatus: PrivacyStatus;
+  boundStreamId: string | null;
 }
 
 const ALL_STREAM_STATUSES = <const> [
@@ -205,12 +216,13 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
   google.youtube('v3').liveBroadcasts.list({
     part: ['id', 'snippet', 'contentDetails', 'status'],
     auth: auth,
-    broadcastStatus: "all"
+    broadcastStatus: "all",
+    maxResults: 20,
   }).then((response) => {
     const data = response.data.items;
     console.log(`total: ${response.data.pageInfo?.totalResults}`)
     console.log(`items: ${response.data.items?.length}`)
-    return data?.flatMap((item) => {
+    return (data?.flatMap((item) => {
       console.log("COUNT")
       //item.contentDetails?.boundStreamId
       const id = item.id
@@ -219,6 +231,7 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
       const description = item.snippet?.description
       const lifeCycleStatus = item.status?.lifeCycleStatus
       const privacyStatus = item.status?.privacyStatus
+      const boundStreamId = item.contentDetails?.boundStreamId
       if (id &&
         scheduledStartTime &&
         title &&
@@ -228,19 +241,21 @@ export const liveBroadcasts: () => Promise<LiveBroadcast[]> =
         isPrivacyStatus(privacyStatus)
       ) {
         console.log("GOOD")
+        console.log(JSON.stringify(item))
         const r: LiveBroadcast = {
           id,
           scheduledStartTime: Date.parse(scheduledStartTime),
           title,
           description: description || "",
           status: lifeCycleStatus,
-          privacyStatus
+          privacyStatus,
+          boundStreamId: boundStreamId || null,
         }
         return [r];
       } else {
         return []
       }
-    }) || []
+    }) || []).sort((a, b) => a.scheduledStartTime < b.scheduledStartTime ? -1 : 1)
   })
 )
 
@@ -273,7 +288,8 @@ export function createLiveBroadcast(
   description: string,
   thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
   scheduledStartTime: Date,
-  privacyStatus?: "public" | "private",
+  streamId: string,
+  privacyStatus?: "public" | "private"
 ): Promise<string> {
   return withAuth((auth: Common.OAuth2Client) =>
   google.youtube('v3').liveBroadcasts.insert({
@@ -289,7 +305,7 @@ export function createLiveBroadcast(
         scheduledStartTime: scheduledStartTime.toISOString(),
       },
       status: {
-        privacyStatus: privacyStatus || "private",
+        privacyStatus: "private" || privacyStatus || "private",
         selfDeclaredMadeForKids: false,
       },
       contentDetails: {
@@ -298,6 +314,13 @@ export function createLiveBroadcast(
       }
     },
     auth: auth,
+  }).then((response) => {
+    return google.youtube('v3').liveBroadcasts.bind({
+      part: [ "id" ],
+      id: response.data.id || "",
+      streamId: streamId,
+      auth: auth,
+    })
   }).then((response) => {
     google.youtube('v3').videos.update({
       part: [ "snippet", "status" ],
@@ -328,8 +351,7 @@ export function updateLiveBroadcast(
   return withAuth((auth: Common.OAuth2Client) =>
   google.youtube('v3').liveBroadcasts.update({
     part: [
-      "snippet",
-      "content_details"
+      "snippet"
     ],
     requestBody: {
       id,
@@ -337,15 +359,58 @@ export function updateLiveBroadcast(
         title,
         description,
         scheduledStartTime: scheduledStartTime.toISOString(),
-      },
-      contentDetails: {
-        enableAutoStart: false,
-        enableAutoStop: false,
       }
     },
     auth: auth,
   }).then((response) => {
     return response.status.toString()
+  })
+)()
+}
+
+export function updateBroadcastStatus(id: string, status: "live" | "testing" | "complete"): Promise<string> {
+  return withAuth((auth: Common.OAuth2Client) =>
+  google.youtube('v3').liveBroadcasts.transition({
+    broadcastStatus: status,
+    part: [ ],
+    id,
+    auth: auth,
+  }).then((response) => {
+    return response.status.toString()
+  })
+)()
+}
+
+export function liveStream(id: string): Promise<LiveStream[]> {
+  return withAuth((auth: Common.OAuth2Client) =>
+  google.youtube('v3').liveStreams.list({
+    "part": [
+      "snippet,cdn,contentDetails,status"
+    ],
+    id: [id],
+    auth: auth,
+  }).then((response) => {
+    const data = response.data.items;
+    return data?.flatMap((item) => {
+      //item.status?.healthStatus?.status
+      item.status?.streamStatus
+      if (
+        item.id &&
+        item.snippet?.title &&
+        item.status?.streamStatus &&
+        isStreamStatus(item.status?.streamStatus)
+      ) {
+        const r: LiveStream = {
+          title: item.snippet?.title,
+          status: item.status?.streamStatus,
+          id: item.id,
+          healthStatus: item.status?.healthStatus?.status && isHealthStatus(item.status?.healthStatus?.status) ? item.status?.healthStatus?.status : "noData"
+        }
+        return [r];
+      } else {
+        return []
+      }
+    }) || []
   })
 )()
 }
@@ -362,6 +427,7 @@ export const liveStreams: () => Promise<LiveStream[]> =
     const data = response.data.items;
     return data?.flatMap((item) => {
       //item.status?.healthStatus?.status
+      item.status?.streamStatus
       if (
         item.id &&
         item.snippet?.title &&
@@ -393,6 +459,7 @@ export function liveBroadcast(
     }).then((response) => {
       const data = response.data.items;
       if (data && data.length === 1) {
+        console.log(data)
         const item = data[0]
         const id = item.id
         const scheduledStartTime = item.snippet?.scheduledStartTime
@@ -400,6 +467,7 @@ export function liveBroadcast(
         const description = item.snippet?.description
         const lifeCycleStatus = item.status?.lifeCycleStatus
         const privacyStatus = item.status?.privacyStatus
+        const boundStreamId = item.contentDetails?.boundStreamId
         if (id &&
           scheduledStartTime &&
           title &&
@@ -415,7 +483,8 @@ export function liveBroadcast(
             title,
             description,
             status: lifeCycleStatus,
-            privacyStatus
+            privacyStatus,
+            boundStreamId: boundStreamId || null
           }
           return r;
         } else {
