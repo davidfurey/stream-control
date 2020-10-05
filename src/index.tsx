@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import * as ReactDOM from "react-dom";
 import { LiveBroadcast, LiveStream } from './youtube';
-import { BroadcastList } from './components/BroadcastList';
-import { StreamList } from './components/StreamList';
 import './style.css';
 import { Container, Row, Col, ListGroup } from 'react-bootstrap';
-import { YoutubeStatus, YoutubeStatusListItem } from './components/YoutubeStatus';
+import { YoutubeStatusListItem } from './components/YoutubeStatus';
 import { BroadcastControl } from './components/BroadcastControl';
 
 interface ParentState {

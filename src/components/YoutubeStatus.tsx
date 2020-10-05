@@ -1,5 +1,5 @@
 import moment from 'moment';
-import React, { Component } from 'react';
+import React from 'react';
 import { Badge, ListGroup } from 'react-bootstrap';
 import { LiveBroadcast, LiveStream, LifecycleStatus, StreamStatus, HealthStatus } from '../youtube';
 
@@ -35,30 +35,6 @@ function StreamStatusBadge(props: { status: StreamStatus; health: HealthStatus})
     case "inactive": return <Badge variant="secondary">Stream inactive</Badge>
     case "error": return <Badge variant="danger">Stream error</Badge>
     case "ready": return <Badge variant="danger">Stream ready</Badge>
-  }
-}
-
-export class YoutubeStatus extends Component<YoutubeStatusProps, {}> {
-  state = {}
-
-  render(): JSX.Element {
-    const titleClass = this.props.broadcast.status === "live" ? "btn btn-danger" : "btn btn-primary"
-
-    return (
-      <div className="btn-toolbar mb-3" role="toolbar">
-        <div className="btn-group btn-group-sm d-flex w-100" role="group" aria-label="First group">
-          <div className={titleClass} style={{minWidth: "10em"}}>{ this.props.broadcast.title }</div>
-          <button className="btn btn-secondary w-100">{
-            moment(this.props.broadcast.scheduledStartTime).format('h:mm a on DD/MM/YYYY')
-          }</button>
-          <LifeCycleStatusButton status={this.props.broadcast.status} />
-          <StreamStatusButton
-            status={this.props.stream.status}
-            health={this.props.stream.healthStatus}
-          />
-        </div>
-        </div>
-    )
   }
 }
 
