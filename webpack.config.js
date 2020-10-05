@@ -31,7 +31,7 @@ const serverConfig = env => {
   const plugins = [
     new CopyPlugin({
       patterns: [
-        { from: 'config/stream-automation.service', to: 'stream-automation.service' }
+        { from: 'config/stream-control.service', to: 'stream-control.service' }
       ],
     })
   ]
