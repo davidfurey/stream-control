@@ -96,10 +96,8 @@ function dailyJob(stores: DataStores) {
 
 export function scheduleTasks(stores: DataStores): void {
   console.log("Scheduling regular tasks")
-  //schedule.scheduleJob('0 * * * *',  hourlyJob(stores))
-  schedule.scheduleJob('* * * * *',  hourlyJob(stores))
-  //schedule.scheduleJob('*/5 * * * *',  fiveMinuteJob(stores))
-  schedule.scheduleJob('*/1 * * * *',  fiveMinuteJob(stores))
+  schedule.scheduleJob('0 * * * *',  hourlyJob(stores))
+  schedule.scheduleJob('*/5 * * * *',  fiveMinuteJob(stores))
   schedule.scheduleJob('*/10 * * * *', tenMinuteJob(stores))
   schedule.scheduleJob('* 2 * * *', dailyJob(stores))
 }
