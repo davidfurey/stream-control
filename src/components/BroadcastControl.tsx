@@ -12,8 +12,14 @@ function setStatus(broadcastId: string, status: "testing" | "complete" | "live")
     if (response.status === 200) {
       console.log(`Set ${broadcastId} to ${status}`)
     } else {
-      window.alert(`Failed to set broadcast to ${status}`)
-      response.text().then((r)=> console.error(r))
+      response.json().then((json) => {
+        if (isYoutubeErrorResponse(json)) {
+          window.alert(`Failed to set broadcast to ${status}: ${json.errors[0].message}`)
+        } else {
+          window.alert(`Failed to set broadcast to ${status}`)
+          console.error(json)
+        }
+      })
     }
   }).catch((e) => {
     window.alert(`Failed to set broadcast to ${status}`)

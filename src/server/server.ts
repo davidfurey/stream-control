@@ -9,6 +9,7 @@ import { EventRunner } from '../eventrunner'
 import { SpreadsheetScheduleStore } from '../SpreadsheetScheduleStore';
 import { SpreadsheetStatusStore } from '../SpreadsheetStatusStore';
 import { CachedYoutubeClient } from '../CachedYoutubeClient';
+import { isYoutubeErrorResponse } from '../YoutubeClient';
 // import { scheduleTasks } from '../scheduled_tasks';
 
 const port = 3041;
@@ -103,8 +104,14 @@ app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
   youtubeClient.updateBroadcastStatus(eventId, status).then(() => {
     res.send("OK")
   }).catch((e) => {
-    console.error(`Failed to set status of event ${eventId} to ${status} (${e})`)
-    res.status(500).send(`Failed to set status of event ${eventId} to ${status} (${e})`)
+    if (isYoutubeErrorResponse(e)) {
+      res.status(e.code)
+      res.json(e)
+    } else {
+      console.log(JSON.stringify(e))
+      console.error(`Failed to set status of event ${eventId} to ${status} (${e})`)
+      res.status(500).send(`Failed to set status of event ${eventId} to ${status} (${e})`)
+    }
   })
 })
 
