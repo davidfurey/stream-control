@@ -7,7 +7,7 @@ export interface BroadcastControlProps {
 }
 
 function setStatus(broadcastId: string, status: "testing" | "complete" | "live"): void {
-  fetch(`/stream-control/youtube/${broadcastId}/${status}`, {
+  fetch(`youtube/${broadcastId}/${status}`, {
     method: 'POST'
   }).then((response) => {
     if (response.status === 200) {
