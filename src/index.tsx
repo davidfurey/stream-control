@@ -99,7 +99,7 @@ export class Parent extends Component<{}, ParentState> {
         <Row>
           <Col>
             <h3>Next broadcast</h3>
-            { upcoming !== null && stream !== null ?
+            { upcoming && stream ?
               <ListGroup className="mb-4">
                 <YoutubeStatusListItem broadcast={upcoming} stream={stream} />
                 <ListGroup.Item>
