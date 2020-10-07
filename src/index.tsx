@@ -97,7 +97,7 @@ export class Parent extends Component<{}, ParentState> {
     return (
       <Container className="mt-4">
         <Row>
-          <Col sm="6">
+          <Col>
             <h3>Next broadcast</h3>
             { upcoming !== null && stream !== null ?
               <ListGroup className="mb-4">
