@@ -88,7 +88,7 @@ export class Parent extends Component<{}, ParentState> {
       }).catch((e) => {
         throw new Error(`Failed to fetch streams. Exception: ${e}`);
       })
-    }, 1000);
+    }, 2000);
   }
 
   render(): JSX.Element {
