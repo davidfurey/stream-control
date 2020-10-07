@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { LiveBroadcast, LiveStream } from '../youtube';
+import { LiveBroadcast, LiveStream } from '../YoutubeClient';
 
 export interface BroadcastControlProps {
   broadcast: LiveBroadcast;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as ReactDOM from "react-dom";
-import { LiveBroadcast, LiveStream } from './youtube';
+import { LiveBroadcast, LiveStream } from './YoutubeClient';
 import './style.css';
 import { Container, Row, Col, ListGroup } from 'react-bootstrap';
 import { YoutubeStatusListItem } from './components/YoutubeStatus';

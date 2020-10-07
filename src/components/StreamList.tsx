@@ -1,6 +1,6 @@
 import React from 'react';
 import { ListGroup, Badge } from 'react-bootstrap'
-import { LiveStream, StreamStatus, HealthStatus } from '../youtube'
+import { LiveStream, StreamStatus, HealthStatus } from '../YoutubeClient'
 import { Variant } from 'react-bootstrap/esm/types';
 
 function StreamStatusBadge(props: {

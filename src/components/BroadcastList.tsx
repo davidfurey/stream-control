@@ -1,7 +1,7 @@
 import React from 'react';
 import { ListGroup, Badge } from 'react-bootstrap'
 import moment from 'moment';
-import { LiveBroadcast } from '../youtube'
+import { LiveBroadcast } from '../YoutubeClient'
 
 function BroadcastListItem(props: {
   broadcast: LiveBroadcast;

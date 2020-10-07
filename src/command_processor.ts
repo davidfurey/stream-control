@@ -1,7 +1,9 @@
 import { setScene, startStreaming, stopStreaming, setSceneCollection } from "./obs"
 import * as Camera from './camera_control'
-import * as Youtube from './youtube'
+import { YoutubeClientImpl } from './youtube'
 import { paState } from './pa_status'
+
+const youtubeClient = new YoutubeClientImpl()
 
 function poll(
   fn: () => Promise<string | null>,
@@ -25,7 +27,7 @@ function poll(
 function waitForLiveStreamReady(boundStreamId: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     poll(() => {
-      return Youtube.liveStream(boundStreamId).then((streams) => {
+      return youtubeClient.liveStream(boundStreamId).then((streams) => {
         if (streams[0].status === "active") {
           return `Stream ${boundStreamId}is now active`
         } else {
@@ -39,7 +41,7 @@ function waitForLiveStreamReady(boundStreamId: string): Promise<string> {
 function waitForLiveBroadcastTesting(eventId: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     poll(() => {
-      return Youtube.liveBroadcast(eventId).then((broadcast) => {
+      return youtubeClient.liveBroadcast(eventId).then((broadcast) => {
         if (broadcast?.status === "testing") {
           return `Broadcast is now testing`
         } else {
@@ -81,15 +83,15 @@ function cameraOff(camera: string): Promise<string> {
 }
 
 function startYoutubeTestBroadcast(eventId: string): Promise<string> {
-  return Youtube.updateBroadcastStatus(eventId, "testing")
+  return youtubeClient.updateBroadcastStatus(eventId, "testing")
 }
 
 function startYoutubeLiveBroadcast(eventId: string): Promise<string> {
-  return Youtube.updateBroadcastStatus(eventId, "live")
+  return youtubeClient.updateBroadcastStatus(eventId, "live")
 }
 
 function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
-  return Youtube.updateBroadcastStatus(eventId, "complete")
+  return youtubeClient.updateBroadcastStatus(eventId, "complete")
 }
 
 function startOBSStream(_: string): Promise<string> {

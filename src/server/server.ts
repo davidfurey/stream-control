@@ -2,13 +2,13 @@ import path from 'path';
 import express from 'express';
 import compression from 'compression';
 import * as http from 'http';
-import { liveBroadcasts, liveStreams, updateBroadcastStatus } from '../youtube'
 import { SpreadsheetEventStore } from '../SpreadsheetEventStore'
 import { createEvents, validateEvents } from './create-events';
 import { setScene, startStreaming, stopStreaming, setSceneCollection } from '../obs';
 import { EventRunner } from '../eventrunner'
 import { SpreadsheetScheduleStore } from '../SpreadsheetScheduleStore';
 import { SpreadsheetStatusStore } from '../SpreadsheetStatusStore';
+import { CachedYoutubeClient } from '../CachedYoutubeClient';
 // import { scheduleTasks } from '../scheduled_tasks';
 
 const port = 3041;
@@ -22,6 +22,8 @@ app.use(compression());
 const eventStore = new SpreadsheetEventStore()
 const scheduleStore = new SpreadsheetScheduleStore()
 const statusStore = new SpreadsheetStatusStore()
+
+const youtubeClient = new CachedYoutubeClient()
 
 statusStore.reportAppStarted(new Date())
 
@@ -47,7 +49,7 @@ app.use(express.static(path.resolve(__dirname, 'public')));
 app.get('/healthcheck', (_req, res) => res.send("Ok"));
 
 app.get('/youtube/streams', (_req, res) => {
-  liveStreams().then((streams) => {
+  youtubeClient.liveStreams().then((streams) => {
     res.json({
       streams: streams
     })
@@ -55,7 +57,7 @@ app.get('/youtube/streams', (_req, res) => {
 })
 
 app.get('/youtube/broadcasts', (_req, res) => {
-  liveBroadcasts().then((events) => {
+  youtubeClient.liveBroadcasts().then((events) => {
     res.json({
       broadcasts: events.filter((v) =>
         v.privacyStatus === "public" || v.privacyStatus !== null
@@ -66,7 +68,7 @@ app.get('/youtube/broadcasts', (_req, res) => {
 })
 
 app.get('/youtube/upcoming', (_req, res) => {
-  liveBroadcasts().then((events) => {
+  youtubeClient.liveBroadcasts().then((events) => {
     res.json({
       broadcasts: events.filter((v) =>
         v.status !== "revoked" && v.status !== "complete"
@@ -98,7 +100,7 @@ app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
   const eventId = req.params['eventId']
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const status = (req.params['status'] as any)
-  updateBroadcastStatus(eventId, status).then(() => {
+  youtubeClient.updateBroadcastStatus(eventId, status).then(() => {
     res.send("OK")
   }).catch((e) => {
     console.error(`Failed to set status of event ${eventId} to ${status} (${e})`)

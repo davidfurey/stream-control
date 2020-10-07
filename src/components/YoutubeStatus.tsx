@@ -1,7 +1,7 @@
 import moment from 'moment';
 import React from 'react';
 import { Badge, ListGroup } from 'react-bootstrap';
-import { LiveBroadcast, LiveStream, LifecycleStatus, StreamStatus, HealthStatus } from '../youtube';
+import { LiveBroadcast, LiveStream, LifecycleStatus, StreamStatus, HealthStatus } from '../YoutubeClient';
 
 export interface YoutubeStatusProps {
   broadcast: LiveBroadcast;

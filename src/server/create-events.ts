@@ -1,8 +1,9 @@
-import { createLiveBroadcast, liveBroadcast, updateLiveBroadcast } from '../youtube'
+import { YoutubeClientImpl } from '../youtube'
 import fs from 'fs'
 import { EventStore } from '../events'
 import { ScheduleStore, creationOverdue, okay, Event } from '../schedules'
 
+const youtubeClient = new YoutubeClientImpl()
 function returnVoid(): void {
   // return void
 }
@@ -24,7 +25,7 @@ export function createEvents(scheduleStore: ScheduleStore, eventStore: EventStor
             return scheduleStore.listEvents(schedule, creationOverdue).then((schedules) => {
               return Promise.all(schedules.map((d) => {
                 console.log(`Creating event for ${d.eventName}`)
-                return createLiveBroadcast(
+                return youtubeClient.createLiveBroadcast(
                   d.eventName,
                   d.description,
                   thumbnail,
@@ -89,7 +90,7 @@ function compare<T>(name: string, a: T, b: T): boolean {
 function validateSchedule(event: Event, eventStore: EventStore): Promise<void> {
   const eventId = event.eventId
   if (eventId) {
-    return liveBroadcast(eventId).then((youtubeEvent) => {
+    return youtubeClient.liveBroadcast(eventId).then((youtubeEvent) => {
       if (!youtubeEvent) {
         console.log("Youtube event not found")
       } else {
@@ -99,7 +100,7 @@ function validateSchedule(event: Event, eventStore: EventStore): Promise<void> {
           compare("Start time", event.scheduledStartTime.getTime(), youtubeEvent.scheduledStartTime)
         )) {
           console.log("Updating youtube event")
-          updateLiveBroadcast(
+          youtubeClient.updateLiveBroadcast(
             eventId,
             event.eventName,
             event.description,
