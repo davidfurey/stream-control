@@ -1,11 +1,10 @@
 import moment from 'moment';
 import React from 'react';
 import { Badge, ListGroup } from 'react-bootstrap';
-import { LiveBroadcast, LiveStream, LifecycleStatus, StreamStatus, HealthStatus } from '../YoutubeClient';
+import { LiveBroadcast, LifecycleStatus } from '../YoutubeClient';
 
 export interface YoutubeStatusProps {
   broadcast: LiveBroadcast;
-  stream: LiveStream;
 }
 
 function LifeCycleStatusBadge(props: { status: LifecycleStatus }): JSX.Element {
@@ -21,22 +20,22 @@ function LifeCycleStatusBadge(props: { status: LifecycleStatus }): JSX.Element {
   }
 }
 
-function StreamStatusBadge(props: { status: StreamStatus; health: HealthStatus}): JSX.Element {
-  switch(props.status) {
-    case "active":
-      switch(props.health) {
-        case "good": return <Badge variant="success">Good signal</Badge>
-        case "ok": return <Badge variant="warning">Ok signal</Badge>
-        case "bad": return <Badge variant="danger">Bad signal</Badge>
-        case "noData": return <Badge variant="secondary">No data</Badge>
-      }
-      break
-    case "created": return <Badge variant="danger">Stream created</Badge>
-    case "inactive": return <Badge variant="secondary">Stream inactive</Badge>
-    case "error": return <Badge variant="danger">Stream error</Badge>
-    case "ready": return <Badge variant="danger">Stream ready</Badge>
-  }
-}
+// function StreamStatusBadge(props: { status: StreamStatus; health: HealthStatus}): JSX.Element {
+//   switch(props.status) {
+//     case "active":
+//       switch(props.health) {
+//         case "good": return <Badge variant="success">Good signal</Badge>
+//         case "ok": return <Badge variant="warning">Ok signal</Badge>
+//         case "bad": return <Badge variant="danger">Bad signal</Badge>
+//         case "noData": return <Badge variant="secondary">No data</Badge>
+//       }
+//       break
+//     case "created": return <Badge variant="danger">Stream created</Badge>
+//     case "inactive": return <Badge variant="secondary">Stream inactive</Badge>
+//     case "error": return <Badge variant="danger">Stream error</Badge>
+//     case "ready": return <Badge variant="danger">Stream ready</Badge>
+//   }
+// }
 
 export function YoutubeStatusListItem(props: YoutubeStatusProps): JSX.Element {
   return <ListGroup.Item>
@@ -44,10 +43,10 @@ export function YoutubeStatusListItem(props: YoutubeStatusProps): JSX.Element {
       { props.broadcast.title }
       <span>
         <LifeCycleStatusBadge status={props.broadcast.status} />
-        <StreamStatusBadge
+        {/* <StreamStatusBadge
           status={props.stream.status}
           health={props.stream.healthStatus}
-        />
+        /> */}
       </span>
     </div>
     <small>{ moment(props.broadcast.scheduledStartTime).format('Do MMMM YYYY @ h:mm a') }</small>

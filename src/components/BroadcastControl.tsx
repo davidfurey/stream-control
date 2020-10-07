@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { LiveBroadcast, LiveStream } from '../YoutubeClient';
+import { isYoutubeErrorResponse, LiveBroadcast } from '../YoutubeClient';
 
 export interface BroadcastControlProps {
   broadcast: LiveBroadcast;
-  stream: LiveStream;
 }
 
 function setStatus(broadcastId: string, status: "testing" | "complete" | "live"): void {
@@ -30,12 +29,7 @@ export class BroadcastControl extends Component<BroadcastControlProps, {}> {
       case "ready": return <button className="btn btn-primary" onClick={(): void => setStatus(this.props.broadcast.id, "testing")}>Prepare</button>
       case "live": return <button className="btn btn-warning" onClick={(): void => setStatus(this.props.broadcast.id, "complete")}>Stop</button>
       case "liveStarting": return <button className="btn btn-danger" disabled>Starting</button>
-      case "testing":
-        if (this.props.stream.status === "active") {
-          return <button className="btn btn-danger" onClick={(): void => setStatus(this.props.broadcast.id, "live")}>Start</button>
-        } else {
-          return <button className="btn btn-secondary" disabled>Stream not active</button>
-        }
+      case "testing": return <button className="btn btn-danger" onClick={(): void => setStatus(this.props.broadcast.id, "live")}>Start</button>
       case "testStarting": return <button className="btn btn-secondary" disabled>Test starting</button>
       case "complete": return <button className="btn btn-secondary" disabled>Complete</button>
       default: return <button className="btn btn-secondary" disabled>Broadcast not ready</button>

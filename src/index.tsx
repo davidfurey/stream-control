@@ -1,25 +1,20 @@
 import React, { Component } from 'react';
 import * as ReactDOM from "react-dom";
-import { LiveBroadcast, LiveStream } from './YoutubeClient';
+import { LiveBroadcast } from './YoutubeClient';
 import './style.css';
 import { Container, Row, Col, ListGroup } from 'react-bootstrap';
 import { YoutubeStatusListItem } from './components/YoutubeStatus';
 import { BroadcastControl } from './components/BroadcastControl';
 
 interface ParentState {
-  broadcasts: LiveBroadcast[];
-  streams: LiveStream[];
   upcoming: LiveBroadcast | null;
 }
 export class Parent extends Component<{}, ParentState> {
   state = {
-    broadcasts: [],
-    streams: [],
     upcoming: null
   }
 
-  constructor(props: {}) {
-    super(props)
+  private fetchUpcoming: () => void = () => {
     fetch('youtube/upcoming').then((response) => {
       if (response.status >= 200 || response.status < 300) {
         response.json().then((body) => {
@@ -37,73 +32,26 @@ export class Parent extends Component<{}, ParentState> {
     }).catch((e) => {
       throw new Error(`Failed to fetch broadcasts. Exception: ${e}`);
     })
-    fetch('youtube/streams').then((response) => {
-      if (response.status >= 200 || response.status < 300) {
-        response.json().then((body) =>
-          this.setState((prev => {
-            return {
-              ...prev,
-              streams: body.streams
-            }
-          })
-        ))
-      } else {
-        throw new Error('Failed to fetch streams');
-      }
-    }).catch((e) => {
-      throw new Error(`Failed to fetch streams. Exception: ${e}`);
-    })
+  }
 
-    setInterval(() => {
-      fetch('youtube/upcoming').then((response) => {
-        if (response.status >= 200 || response.status < 300) {
-          response.json().then((body) => {
-            const parsed: LiveBroadcast[] = body.broadcasts
-            this.setState((prev => {
-              return {
-                ...prev,
-                upcoming: parsed[0]
-              }
-            })
-          )})
-        } else {
-          throw new Error('Failed to fetch broadcasts');
-        }
-      }).catch((e) => {
-        throw new Error(`Failed to fetch broadcasts. Exception: ${e}`);
-      })
-      fetch('youtube/streams').then((response) => {
-        if (response.status >= 200 || response.status < 300) {
-          response.json().then((body) =>
-            this.setState((prev => {
-              return {
-                ...prev,
-                streams: body.streams
-              }
-            })
-          ))
-        } else {
-          throw new Error('Failed to fetch streams');
-        }
-      }).catch((e) => {
-        throw new Error(`Failed to fetch streams. Exception: ${e}`);
-      })
-    }, 2000);
+  constructor(props: {}) {
+    super(props)
+    this.fetchUpcoming()
+    setInterval(this.fetchUpcoming, 2000);
   }
 
   render(): JSX.Element {
     const upcoming = this.state.upcoming
-    const stream = this.state.streams[0]
     return (
       <Container className="mt-4">
         <Row>
           <Col>
             <h3>Next broadcast</h3>
-            { upcoming && stream ?
+            { upcoming ?
               <ListGroup className="mb-4">
-                <YoutubeStatusListItem broadcast={upcoming} stream={stream} />
+                <YoutubeStatusListItem broadcast={upcoming} />
                 <ListGroup.Item>
-                  <BroadcastControl broadcast={upcoming} stream={stream} />
+                  <BroadcastControl broadcast={upcoming} />
                 </ListGroup.Item>
               </ListGroup>:
               "No upcoming broadcasts"
