@@ -67,6 +67,38 @@ export function isHealthStatus(s: string): s is HealthStatus {
   return (ALL_HEALTH_STATUSES as ReadonlyArray<string>).includes(s)
 }
 
+interface YoutubeError {
+  message: string;
+  domain: string;
+  reason: string;
+  extendedHelp: string;
+}
+
+interface YoutubeErrorResponse {
+  code: number;
+  errors: YoutubeError[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isYoutubeError(t: any): t is YoutubeError {
+  return typeof t === "object" &&
+    typeof t.message === "string" &&
+    typeof t.domain === "string" &&
+    typeof t.reason === "string" &&
+    typeof t.extendedHelp === "string"
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isYoutubeErrorResponse(t: any): t is YoutubeErrorResponse {
+  if (typeof t === "object") {
+    const errors = t.errors
+    return typeof t.code === "number" &&
+      Array.isArray(errors) &&
+      errors.every((error) => isYoutubeError(error))
+  }
+  return false
+}
+
 export abstract class YoutubeClient {
   abstract liveBroadcasts: () => Promise<LiveBroadcast[]>
   abstract createLiveBroadcast(
