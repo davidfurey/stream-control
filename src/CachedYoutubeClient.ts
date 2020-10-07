@@ -3,7 +3,7 @@ import { LiveBroadcast, LiveStream, YoutubeClient } from "./YoutubeClient";
 
 
 interface CachedItem<T> {
-  value: T;
+  value: Promise<T>;
   expiry: Date;
 }
 
@@ -21,18 +21,17 @@ class Cache {
 
   getOrSet<T>(key: string, fn: () => Promise<T>): Promise<T> {
     const cached = this.youtubeCache[key]
-    console.log(cached)
     if (cached && this.enabled() && cached.expiry > new Date()) {
-      console.log(`Returning cached value for ${key}`)
-      return Promise.resolve(cached.value as T)
+      return cached.value as Promise<T>
     } else {
-      console.log("Using uncached version")
+      console.log(`Using uncached version of ${key}`)
       const result = fn()
-      result.then((v) => { this.youtubeCache[key] = {
-        value: v,
+      this.youtubeCache[key] = {
+        value: result,
         expiry: new Date(new Date().getTime() + 300000)
       }
-      console.log(this.youtubeCache)
+      result.catch(() => { // if request fails, invalidate cache
+        delete this.youtubeCache[key]
       })
       return result
     }
