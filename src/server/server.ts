@@ -10,7 +10,7 @@ import { SpreadsheetScheduleStore } from '../SpreadsheetScheduleStore';
 import { SpreadsheetStatusStore } from '../SpreadsheetStatusStore';
 import { CachedYoutubeClient } from '../CachedYoutubeClient';
 import { isYoutubeErrorResponse } from '../YoutubeClient';
-// import { scheduleTasks } from '../scheduled_tasks';
+import { scheduleTasks } from '../scheduled_tasks';
 
 const port = 3041;
 
@@ -28,11 +28,11 @@ const youtubeClient = new CachedYoutubeClient()
 
 statusStore.reportAppStarted(new Date())
 
-// scheduleTasks({
-//   events: eventStore,
-//   schedules: scheduleStore,
-//   status: statusStore
-// })
+scheduleTasks({
+  events: eventStore,
+  schedules: scheduleStore,
+  status: statusStore
+})
 
 app.all('*', (request, response, next) => {
     const start = Date.now();
