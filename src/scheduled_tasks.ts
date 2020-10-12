@@ -33,7 +33,9 @@ function fiveMinuteJob(stores: DataStores) {
       return Promise.all(schedules.map((schedule) => {
         return stores.schedules.listEvents(
           schedule,
-          (evt) => Math.abs(evt.firstEventTime.getTime() - new Date().getTime()) < 600000
+          (evt) =>
+            Math.abs(evt.firstEventTime.getTime() - new Date().getTime()) < 600000 &&
+            evt.automated
         ).then((events) => {
           events.map((evt) => {
             if (evt.eventId && eventRunners[evt.eventId] === undefined) {

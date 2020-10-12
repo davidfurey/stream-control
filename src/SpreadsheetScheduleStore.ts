@@ -56,7 +56,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
               description: row[2],
               scheduledStartTime: dateFromSerial(row[3]),
               dayOfWeek: row[4],
-              automated: row[5],
+              automated: row[5].toLowerCase() === "yes",
               maxLength: duration(row[6] * 24 * 60 * 60 * 1000),
               template: row[7],
               streamId: row[8],
