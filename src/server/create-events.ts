@@ -8,9 +8,53 @@ function returnVoid(): void {
   // return void
 }
 
+function eventCreator(
+  scheduleStore: ScheduleStore,
+  eventStore: EventStore,
+  d: Event,
+  schedule: string,
+  thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer}
+): () => Promise<void | undefined> {
+  console.log(`Creating event for ${d.eventName} (${schedule})`)
+  return (): Promise<void | undefined> => youtubeClient.createLiveBroadcast(
+    d.eventName,
+    d.description,
+    thumbnail,
+    d.scheduledStartTime,
+    d.streamId,
+    "public"
+  ).then((youtubeId) => {
+    scheduleStore.setYoutubeId(schedule, d.rowNumber, youtubeId)
+    if (d.automated) {
+      return eventStore.createEvent(
+        youtubeId,
+        d.streamId,
+        d.scheduledStartTime,
+        d.eventName,
+        d.template
+      )
+    } else {
+      return
+    }
+  })
+}
+
+export function promiseSequence<T>(fns: (() => Promise<T>)[], result: T[] = []): Promise<T[]> {
+  if (fns.length === 0) {
+    return Promise.resolve(result)
+  } else {
+    return fns[0]().then((r) => {
+      return promiseSequence(fns.slice(1), [...result, r])
+    }).catch((e) => {
+      console.log(`Recovering from ${e} by skipping`)
+      return promiseSequence(fns.slice(1), result)
+    })
+  }
+}
+
 export function createEvents(scheduleStore: ScheduleStore, eventStore: EventStore): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.readFile('/home/david/Downloads/SA_mass_welcome.png', function(err, data) {
+    fs.readFile('/home/user/Documents/general_slides/SA_mass_welcome.png', function(err, data) {
       if (err) {
         console.log("Error reading thumbnail")
         reject("Error reading thumbnail")
@@ -19,39 +63,25 @@ export function createEvents(scheduleStore: ScheduleStore, eventStore: EventStor
           mimeType: "image/jpeg",
           data: data
         }
-        scheduleStore.getSchedules().then((schedules) => {
-          return Promise.all(schedules.map((schedule) => {
-            console.log(`Creating events for ${schedule}`)
-            return scheduleStore.listEvents(schedule, creationOverdue).then((schedules) => {
-              return Promise.all(schedules.map((d) => {
-                console.log(`Creating event for ${d.eventName}`)
-                return youtubeClient.createLiveBroadcast(
-                  d.eventName,
-                  d.description,
-                  thumbnail,
-                  d.scheduledStartTime,
-                  d.streamId,
-                  "public"
-                ).then((youtubeId) => {
-                  scheduleStore.setYoutubeId(schedule, d.rowNumber, youtubeId)
-                  if (d.automated) {
-                    return eventStore.createEvent(
-                      youtubeId,
-                      d.streamId,
-                      d.scheduledStartTime,
-                      d.eventName,
-                      d.template
-                    )
-                  } else {
-                    return
-                  }
-                })
-              }))
-            })
-          }))
-        }).then(() => {
-          resolve()
-        }).catch(reject)
+        scheduleStore.getSchedules().then((schedules) =>
+          Promise.all(
+            schedules.map((schedule) =>
+              scheduleStore.listEvents(schedule, creationOverdue).then((events) =>
+                events.map((d) =>
+                  eventCreator(
+                    scheduleStore,
+                    eventStore,
+                    d,
+                    schedule,
+                    thumbnail
+                  )
+                )
+              )
+            )
+          )
+        ).then((r) => promiseSequence(r.flat())
+        ).then(() => resolve()
+        ).catch(reject)
       }
     })
   })
