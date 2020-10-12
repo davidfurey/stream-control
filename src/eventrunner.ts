@@ -67,7 +67,7 @@ export class EventRunner {
       }
     })
   }
-
+// todo: stop event when it is finished?
   private eventLoop(): void {
     this.scheduleEventSteps(this.event)
     setTimeout(() => {
