@@ -108,20 +108,12 @@ app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
       res.status(e.code)
       res.json(e)
     } else {
-      console.log(JSON.stringify(e))
+      console.error(JSON.stringify(e))
       console.error(`Failed to set status of event ${eventId} to ${status} (${e})`)
       res.status(500).send(`Failed to set status of event ${eventId} to ${status} (${e})`)
     }
   })
 })
-
-// process.on(
-// 	"unhandledRejection",
-// 	function handleWarning( reason, promise ) {
-// 		console.log( reason );
-//     console.log(promise)
-// 	}
-// );
 
 app.post('/general/create-events', (_req, res) => {
   createEvents(scheduleStore, eventStore)

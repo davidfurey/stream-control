@@ -52,7 +52,7 @@ export class EventRunner {
               this.event.steps[step.id - 1].message = res
               return this.store.stepComplete(event.eventId, step.id, endTime, "Success", res)
             }, (err) => {
-              console.log("Failure encountered - stopping")
+              console.error("Failure encountered - stopping")
               this.stopEvent()
               const endTime = new Date()
               this.event.steps[step.id - 1].endTime = endTime
