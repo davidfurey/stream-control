@@ -157,10 +157,12 @@ function addThumbnail(
       },
       auth: auth
     }).then((response) => {
-      console.log(JSON.stringify(response))
+      if (response.status < 200 || response.status >= 300) {
+        console.error(JSON.stringify(response))
+      }
       return videoId
     }).catch((error) => {
-      console.log(JSON.stringify(error))
+      console.error(JSON.stringify(error))
       return Promise.resolve("error")
     })
   }
@@ -385,7 +387,6 @@ export class YoutubeClientImpl extends YoutubeClient {
       }).then((response) => {
         const data = response.data.items;
         if (data && data.length === 1) {
-          console.log(data)
           const item = data[0]
           const id = item.id
           const scheduledStartTime = item.snippet?.scheduledStartTime

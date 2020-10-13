@@ -142,7 +142,6 @@ function validateSchedule(event: Event, eventStore: EventStore): Promise<void> {
       console.error("Error fetching event from youtube")
     }).then(() => {
       if (event.automated) {
-        console.log("Event is automated")
         return eventStore.getEvent(eventId).then((evt) => {
           if (evt.scheduledStartTime.getTime() !== event.scheduledStartTime.getTime()) {
             console.log("Scheduled start time does not match sheet, updating event sheet")
