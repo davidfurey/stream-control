@@ -21,7 +21,14 @@ function poll(
         reject("Timeout")
       }
     }
-  }).catch(reject)
+  }).catch((e) => {
+    console.error(`Error (${e} while polling, retrying anyway`)
+    if (maxAttempts > 0) {
+      setTimeout(() => poll(fn, resolve, reject, maxAttempts - 1), 1000)
+    } else {
+      reject("Timeout")
+    }
+  })
 }
 
 function waitForLiveStreamReady(boundStreamId: string): Promise<string> {
