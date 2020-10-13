@@ -78,6 +78,10 @@ const serverConfig = env => {
             },
             {
               loader: 'ts-loader',
+              options: {
+                configFile: 'tsconfig.server.json',
+                onlyCompileBundledFiles: true
+              }
             }
           ],
         },
@@ -102,7 +106,12 @@ const clientConfig = env => {
       rules: [
         {
           test: /\.tsx?$/,
-          use: 'ts-loader',
+          use: [
+            {
+              loader: 'ts-loader',
+              options: { configFile: 'tsconfig.client.json' },
+            }
+          ],
           exclude: /node_modules/,
         },
         {
