@@ -1,4 +1,5 @@
 import { Duration } from 'moment';
+import { PrivacyStatus } from './YoutubeClient';
 
 export type Lifecycle =
   "Creation overdue" | "Okay" | "Missed" | "Past"
@@ -11,9 +12,6 @@ export type DayOfWeek =
   "Fri" |
   "Sat" |
   "Sun"
-
-export type PrivacyStatus =
-  "public" | "private" | "unlisted"
 
 export interface Event {
   rowNumber: number;
