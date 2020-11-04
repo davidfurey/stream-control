@@ -22,7 +22,7 @@ function eventCreator(
     thumbnail,
     d.scheduledStartTime,
     d.streamId,
-    "public"
+    d.privacyStatus
   ).then((youtubeId) => {
     scheduleStore.setYoutubeId(schedule, d.rowNumber, youtubeId)
     if (d.automated) {
@@ -127,14 +127,16 @@ function validateSchedule(event: Event, eventStore: EventStore): Promise<void> {
         if (!(
           compare("Title", event.eventName, youtubeEvent.title) &&
           compare("Description", event.description, youtubeEvent.description) &&
-          compare("Start time", event.scheduledStartTime.getTime(), youtubeEvent.scheduledStartTime)
+          compare("Start time", event.scheduledStartTime.getTime(), youtubeEvent.scheduledStartTime) &&
+          compare("Privacy status", event.privacyStatus, youtubeEvent.privacyStatus)
         )) {
           console.log("Updating youtube event")
           youtubeClient.updateLiveBroadcast(
             eventId,
             event.eventName,
             event.description,
-            event.scheduledStartTime
+            event.scheduledStartTime,
+            event.privacyStatus
           )
         }
       }

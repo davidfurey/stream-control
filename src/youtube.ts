@@ -4,7 +4,7 @@ import { google, Common, Auth } from 'googleapis'
 import { Credentials } from 'google-auth-library';
 import 'array-flat-polyfill';
 import { Readable, ReadableOptions } from "stream";
-import { LiveBroadcast, isLivecycleStatus, isPrivacyStatus, LiveStream, isStreamStatus, isHealthStatus, YoutubeClient } from './YoutubeClient';
+import { LiveBroadcast, isLivecycleStatus, isPrivacyStatus, LiveStream, isStreamStatus, isHealthStatus, YoutubeClient, PrivacyStatus } from './YoutubeClient';
 
 // todo:
 // - connect Youtube to my channel for testing
@@ -217,7 +217,7 @@ export class YoutubeClientImpl extends YoutubeClient {
     thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
     scheduledStartTime: Date,
     streamId: string,
-    privacyStatus?: "public" | "private"
+    privacyStatus?: PrivacyStatus
   ): Promise<string> {
     return withAuth((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveBroadcasts.insert({
@@ -274,7 +274,8 @@ export class YoutubeClientImpl extends YoutubeClient {
     id: string,
     title: string,
     description: string,
-    scheduledStartTime: Date
+    scheduledStartTime: Date,
+    privacyStatus: PrivacyStatus
   ): Promise<string> {
     return withAuth((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveBroadcasts.update({
@@ -287,6 +288,9 @@ export class YoutubeClientImpl extends YoutubeClient {
           title,
           description,
           scheduledStartTime: scheduledStartTime.toISOString(),
+        },
+        status: {
+          privacyStatus
         }
       },
       auth: auth,
