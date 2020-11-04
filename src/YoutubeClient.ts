@@ -107,14 +107,15 @@ export abstract class YoutubeClient {
     thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
     scheduledStartTime: Date,
     streamId: string,
-    privacyStatus?: "public" | "private"
+    privacyStatus?: PrivacyStatus
   ): Promise<string>
 
   abstract updateLiveBroadcast(
     id: string,
     title: string,
     description: string,
-    scheduledStartTime: Date
+    scheduledStartTime: Date,
+    privacyStatus: PrivacyStatus
   ): Promise<string>
 
   abstract updateBroadcastStatus(id: string, status: "live" | "testing" | "complete"): Promise<string>
