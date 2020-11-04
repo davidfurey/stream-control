@@ -70,7 +70,13 @@ export class CachedYoutubeClient extends YoutubeClient {
     privacyStatus: PrivacyStatus
   ): Promise<string> {
     this.cache.disableForTimeout()
-    return this.underlying.updateLiveBroadcast(id, title, description, scheduledStartTime, privacyStatus)
+    return this.underlying.updateLiveBroadcast(
+      id,
+      title,
+      description,
+      scheduledStartTime,
+      privacyStatus
+    )
   }
 
   updateBroadcastStatus(id: string, status: "live" | "testing" | "complete"): Promise<string> {

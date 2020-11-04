@@ -8,7 +8,7 @@ const youtubeClient = new YoutubeClientImpl()
 function poll(
   fn: () => Promise<string | null>,
   resolve: (s: string) => void,
-  reject: (s: any) => void,
+  reject: (s: unknown) => void,
   maxAttempts: number,
 ): void {
   fn().then((result) => {
@@ -41,7 +41,7 @@ function waitForLiveStreamReady(boundStreamId: string): Promise<string> {
           return null
         }
       })
-    }, resolve, (err: any) => reject(`Error waiting for streamd ${boundStreamId}: ${JSON.stringify(err)}`), 60)
+    }, resolve, (err) => reject(`Error waiting for streamd ${boundStreamId}: ${JSON.stringify(err)}`), 60)
   })
 }
 
@@ -55,7 +55,7 @@ function waitForLiveBroadcastTesting(eventId: string): Promise<string> {
           return null
         }
       })
-    }, resolve, (err: any) => reject(`Error waiting for live broadcast ${eventId} testing: ${JSON.stringify(err)}`), 60)
+    }, resolve, (err) => reject(`Error waiting for live broadcast ${eventId} testing: ${JSON.stringify(err)}`), 60)
   })
 }
 
@@ -69,12 +69,12 @@ function waitForPA(requiredState: "on" | "off"): Promise<string> {
           return null
         }
       })
-    }, resolve, (err: any) => reject(`Error waiting for PA ${requiredState}: ${JSON.stringify(err)}`), 7200) // todo: don't go beyond event max time
+    }, resolve, (err) => reject(`Error waiting for PA ${requiredState}: ${JSON.stringify(err)}`), 7200) // todo: don't go beyond event max time
   })
 }
 
 function waitForPAOn(_: string): Promise<string> {
-  return waitForPA("on")
+  return waitForPA("on") // todo: add parameter for max time to wait?
 }
 
 function waitForPAOff(_: string): Promise<string> {
