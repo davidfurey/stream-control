@@ -31,7 +31,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
         range: `schedule/${scheduleName}!J${row+1}`,
         valueInputOption: 'RAW',
         requestBody: {
-          range: `schedule/${scheduleName}!J${row+1}`,
+          range: `schedule/${scheduleName}!K${row+1}`,
           values: [ [ youTubeId ] ],
         }
       }).then((response) => response.statusText)
@@ -57,15 +57,16 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
               scheduledStartTime: dateFromSerial(row[3]),
               dayOfWeek: row[4],
               automated: row[5].toLowerCase() === "yes",
-              maxLength: duration(row[6] * 24 * 60 * 60 * 1000),
-              template: row[7],
-              streamId: row[8],
-              eventId: row[9] === "" ? undefined : row[9],
-              scheduledCreationTime: dateFromSerial(row[10]),
-              firstEventTime: dateFromSerial(row[11]),
-              lastestEndTime: dateFromSerial(row[12]),
-              scheduledActive: row[13],
-              lifecycle: row[14]
+              privacyStatus: row[6],
+              maxLength: duration(row[7] * 24 * 60 * 60 * 1000),
+              template: row[8],
+              streamId: row[9],
+              eventId: row[10] === "" ? undefined : row[9],
+              scheduledCreationTime: dateFromSerial(row[11]),
+              firstEventTime: dateFromSerial(row[12]),
+              lastestEndTime: dateFromSerial(row[13]),
+              scheduledActive: row[14],
+              lifecycle: row[15]
             }
           });
           if (filter) {

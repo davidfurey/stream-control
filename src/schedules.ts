@@ -12,6 +12,9 @@ export type DayOfWeek =
   "Sat" |
   "Sun"
 
+export type PrivacyStatus =
+  "public" | "private" | "unlisted"
+
 export interface Event {
   rowNumber: number;
   eventName: string;
@@ -20,6 +23,7 @@ export interface Event {
   scheduledStartTime: Date;
   dayOfWeek: DayOfWeek;
   automated: boolean;
+  privacyStatus: PrivacyStatus;
   maxLength: Duration;
   template: string;
   streamId: string;
