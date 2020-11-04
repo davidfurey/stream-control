@@ -5,25 +5,24 @@ interface CameraDetails {
 }
 
 const cameras: { [camera: string]: CameraDetails } = {
-  "Left Pillar": {
+  "left pillar": {
     hostname: "controller-3",
   },
-  "Right Pillar": {
+  "right pillar": {
     hostname: "controller-1",
   },
-  "Font Pillar": {
+  "font pillar": {
     hostname: "controller-4",
   },
-  "Organ Loft": {
+  "organ loft": {
     hostname: "controller-2"
   }
 }
 
 export function cameraOn(camera: string): Promise<string> {
-  const cameraData = cameras[camera]
-  return Promise.resolve("Dummy success")
+  const cameraData = cameras[camera.toLowerCase()]
   if (cameraData) {
-    return fetch(`http://${cameraData.hostname}/api/on`, { method: 'POST' })
+    return fetch(`http://${cameraData.hostname}:3040/api/camera/power/on`, { method: 'POST' })
       .then(res => {
         if (res.status >= 200 && res.status < 300) {
           return `Camera ${camera} is on`
@@ -37,10 +36,9 @@ export function cameraOn(camera: string): Promise<string> {
 }
 
 export function cameraOff(camera: string): Promise<string> {
-  const cameraData = cameras[camera]
-  return Promise.resolve("Dummy success")
+  const cameraData = cameras[camera.toLowerCase()]
   if (cameraData) {
-    return fetch(`http://${cameraData.hostname}/api/off`, { method: 'POST' })
+    return fetch(`http://${cameraData.hostname}:3040/api/camera/power/off`, { method: 'POST' })
       .then(res => {
         if (res.status >= 200 && res.status < 300) {
           return `Camera ${camera} is off`
