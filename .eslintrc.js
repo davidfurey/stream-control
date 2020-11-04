@@ -17,7 +17,7 @@ module.exports =  {
           // Allows for the parsing of JSX
           jsx:  true,
       },
-      project: 'tsconfig.json',
+      project: 'tsconfig.server.json',
   },
   rules: {
       // Triple-equals equality in JS
