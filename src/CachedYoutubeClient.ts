@@ -1,5 +1,5 @@
 import { YoutubeClientImpl } from "./youtube";
-import { LiveBroadcast, LiveStream, YoutubeClient } from "./YoutubeClient";
+import { LiveBroadcast, LiveStream, PrivacyStatus, YoutubeClient } from "./YoutubeClient";
 
 
 interface CachedItem<T> {
@@ -51,7 +51,7 @@ export class CachedYoutubeClient extends YoutubeClient {
     thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer },
     scheduledStartTime: Date,
     streamId: string,
-    privacyStatus?: "public" | "private"): Promise<string> {
+    privacyStatus?: PrivacyStatus): Promise<string> {
     this.cache.disableForTimeout()
     return this.underlying.createLiveBroadcast(
       title,
@@ -66,10 +66,11 @@ export class CachedYoutubeClient extends YoutubeClient {
     id: string,
     title: string,
     description: string,
-    scheduledStartTime: Date
+    scheduledStartTime: Date,
+    privacyStatus: PrivacyStatus
   ): Promise<string> {
     this.cache.disableForTimeout()
-    return this.underlying.updateLiveBroadcast(id, title, description, scheduledStartTime)
+    return this.underlying.updateLiveBroadcast(id, title, description, scheduledStartTime, privacyStatus)
   }
 
   updateBroadcastStatus(id: string, status: "live" | "testing" | "complete"): Promise<string> {
