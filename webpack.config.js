@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack')
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
 const gitRevisionPlugin = new GitRevisionPlugin();
 
 //how does this work?
@@ -31,7 +32,9 @@ const serverConfig = env => {
   const plugins = [
     new CopyPlugin({
       patterns: [
-        { from: 'config/stream-control.service', to: 'stream-control.service' }
+        { from: 'package.json', to: 'package.json' },
+        { from: 'package-lock.json', to: 'package-lock.json' },
+        { from: 'node_modules', to: 'node_modules' }
       ],
     })
   ]
@@ -47,6 +50,7 @@ const serverConfig = env => {
     mode,
     entry: './src/server/server.ts',
     target: 'node',
+    externals: [nodeExternals()],
     node: {
       __dirname: false,
     },

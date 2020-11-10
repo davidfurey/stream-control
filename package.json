@@ -1,7 +1,7 @@
 {
   "name": "stream-automation",
   "version": "1.0.0",
-  "description": "",
+  "description": "Service to allow automatic and manual control of Youtube live stream",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -14,10 +14,22 @@
     "watch:client": "webpack-dev-server --config webpack.config.js --config-name client",
     "watch": "npm run watch:server & npm run watch:client",
     "lint": "node_modules/eslint/bin/eslint.js -c .eslintrc.js ./ --ext '.ts,.tsx'",
-    "lint:fix": "node_modules/eslint/bin/eslint.js -c .eslintrc.js ./ --ext '.ts,.tsx' --fix"
+    "lint:fix": "node_modules/eslint/bin/eslint.js -c .eslintrc.js ./ --ext '.ts,.tsx' --fix",
+    "package": "npm run build:prod; cd dist; node-deb --install-strategy copy -- server.js public"
+  },
+  "node_deb": {
+    "dependencies": "npm",
+    "entrypoints": {
+      "daemon": "server.js"
+    },
+    "user": "root",
+    "templates": {
+      "default_variables": "../config/default.template",
+      "systemd_service": "../config/stream-control.service.template"
+    }
   },
   "keywords": [],
-  "author": "",
+  "author": "David Furey",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.9.6",
@@ -40,12 +52,14 @@
     "git-revision-webpack-plugin": "^3.0.6",
     "html-webpack-plugin": "^4.0.2",
     "mini-css-extract-plugin": "^0.9.0",
+    "node-deb": "^0.10.7",
     "source-map-loader": "^0.2.4",
     "ts-loader": "^6.2.2",
     "typescript": "^3.8.3",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.10.3"
+    "webpack-dev-server": "^3.10.3",
+    "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
     "@types/node-fetch": "^2.5.7",
