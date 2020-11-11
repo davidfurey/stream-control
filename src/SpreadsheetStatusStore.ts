@@ -1,6 +1,7 @@
 import { StatusStore, ReportedStatus } from "./status";
-import { withAuth, serialFromDate, dateFromSerial } from "./spreadsheet";
+import { serialFromDate, dateFromSerial } from "./spreadsheet";
 import { Common, google } from "googleapis";
+import { withAuth } from "./google-oauth";
 
 function returnVoid(): void {
   // return void

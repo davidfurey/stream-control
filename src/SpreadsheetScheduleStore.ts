@@ -1,8 +1,9 @@
 import { Event, EventFilter } from "./schedules";
-import { dateFromSerial, withAuth } from "./spreadsheet"
+import { dateFromSerial } from "./spreadsheet"
 import { google, Common } from 'googleapis'
 import { duration } from 'moment';
 import { ScheduleStore } from "./schedules";
+import { withAuth } from "./google-oauth";
 
 
 export class SpreadsheetScheduleStore extends ScheduleStore {

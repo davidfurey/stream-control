@@ -1,5 +1,6 @@
 import { EventStore, RunningEvent, Step, EndState } from "./events";
-import { dateFromSerial, serialFromDate, withAuth } from "./spreadsheet"
+import { dateFromSerial, serialFromDate } from "./spreadsheet"
+import { withAuth } from './google-oauth'
 import { google, Common } from 'googleapis'
 import { duration } from 'moment';
 
