@@ -8,7 +8,7 @@ const SCOPES = [
   'https://www.googleapis.com/auth/youtube'
 ];
 
-const CONFIG_DIR = process.env.CONFIG_DIR || '/etc/stream-automation/';
+const CONFIG_DIR = process.env.CONFIG_DIR || '/etc/stream-control/';
 
 const TOKEN_PATH = CONFIG_DIR + 'token.json';
 
