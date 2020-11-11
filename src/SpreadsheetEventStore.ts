@@ -79,27 +79,19 @@ export class SpreadsheetEventStore extends EventStore {
     })()
   }
 
-  events: { [eventId: string]: RunningEvent } = { }
-
   getEvent(eventId: string): Promise<RunningEvent> {
-    const cached = this.events[eventId]
-    if (cached) {
-      return Promise.resolve(cached)
-    } else {
-      return this.getSteps(eventId).then((steps) =>
-        this.getMetadata(eventId).then((metadata) => {
-          const event = {
-            eventId,
-            streamId: metadata.streamId,
-            scheduledStartTime: metadata.scheduledStartTime,
-            steps,
-            running: false
-          }
-          this.events[eventId] = event
-          return event
-        })
-      )
-    }
+    return this.getSteps(eventId).then((steps) =>
+      this.getMetadata(eventId).then((metadata) => {
+        const event = {
+          eventId,
+          streamId: metadata.streamId,
+          scheduledStartTime: metadata.scheduledStartTime,
+          steps,
+          running: false
+        }
+        return event
+      })
+    )
   }
 
   private stepsOffset = 7
