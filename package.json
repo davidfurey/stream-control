@@ -1,5 +1,5 @@
 {
-  "name": "stream-automation",
+  "name": "stream-control",
   "version": "1.0.0",
   "description": "Service to allow automatic and manual control of Youtube live stream",
   "private": true,
@@ -15,17 +15,19 @@
     "watch": "npm run watch:server & npm run watch:client",
     "lint": "node_modules/eslint/bin/eslint.js -c .eslintrc.js ./ --ext '.ts,.tsx'",
     "lint:fix": "node_modules/eslint/bin/eslint.js -c .eslintrc.js ./ --ext '.ts,.tsx' --fix",
-    "package": "npm run build:prod; cd dist; node-deb --install-strategy copy -- server.js public"
+    "package": "npm run build:prod; cd dist; node-deb --install-strategy copy -- server.js auth-cli.js public"
   },
   "node_deb": {
     "dependencies": "npm",
     "entrypoints": {
-      "daemon": "server.js"
+      "daemon": "server.js",
+      "cli": "auth-cli.js"
     },
-    "user": "root",
+    "executable_name": "stream-control-auth",
+    "user": "stream-control",
+    "group": "stream-control",
     "templates": {
-      "default_variables": "../config/default.template",
-      "systemd_service": "../config/stream-control.service.template"
+      "default_variables": "../config/default.template"
     }
   },
   "keywords": [],
@@ -43,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.1",
     "css-loader": "^3.5.2",
     "eslint": "^7.0.0",
@@ -59,7 +62,8 @@
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.10.3",
-    "webpack-node-externals": "^2.5.2"
+    "webpack-node-externals": "^2.5.2",
+    "webpack-permissions-plugin": "^1.0.7"
   },
   "dependencies": {
     "@types/node-fetch": "^2.5.7",

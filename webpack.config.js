@@ -7,6 +7,8 @@ const webpack = require('webpack')
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 const gitRevisionPlugin = new GitRevisionPlugin();
+const PermissionsOutputPlugin = require('webpack-permissions-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 //how does this work?
 class LaunchServerPlugin {
@@ -30,12 +32,20 @@ const serverConfig = env => {
   const isWatch = env && env.watch;
 
   const plugins = [
+    new CleanWebpackPlugin(),
     new CopyPlugin({
       patterns: [
         { from: 'package.json', to: 'package.json' },
         { from: 'package-lock.json', to: 'package-lock.json' },
         { from: 'node_modules', to: 'node_modules' }
       ],
+    }),
+    new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true }),
+    new PermissionsOutputPlugin({
+      buildFiles: [
+        path.resolve(__dirname, 'dist/server.js'),
+        path.resolve(__dirname, 'dist/auth-cli.js'),
+      ]
     })
   ]
 
@@ -48,14 +58,17 @@ const serverConfig = env => {
   return {
     name: 'server',
     mode,
-    entry: './src/server/server.ts',
+    entry: {
+      server: './src/server/server.ts',
+      'auth-cli': './src/server/auth-cli.ts'
+    },
     target: 'node',
     externals: [nodeExternals()],
     node: {
       __dirname: false,
     },
     output: {
-      filename: 'server.js',
+      filename: '[name].js',
     },
     watch: isWatch,
     watchOptions: {
