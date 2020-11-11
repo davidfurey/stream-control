@@ -94,7 +94,7 @@ type ClientSecret = {
     client_secret: string;
     client_id: string;
     redirect_uris: string[];
-  }
+  };
 }
 
 export function requestAuthorization(): Promise<string> {
