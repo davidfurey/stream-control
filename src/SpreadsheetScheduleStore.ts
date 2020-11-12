@@ -29,7 +29,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
-        range: `schedule/${scheduleName}!J${row+1}`,
+        range: `schedule/${scheduleName}!K${row+1}`,
         valueInputOption: 'RAW',
         requestBody: {
           range: `schedule/${scheduleName}!K${row+1}`,
@@ -62,7 +62,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
               maxLength: duration(row[7] * 24 * 60 * 60 * 1000),
               template: row[8],
               streamId: row[9],
-              eventId: row[10] === "" ? undefined : row[9],
+              eventId: row[10] === "" ? undefined : row[10],
               scheduledCreationTime: dateFromSerial(row[11]),
               firstEventTime: dateFromSerial(row[12]),
               lastestEndTime: dateFromSerial(row[13]),
