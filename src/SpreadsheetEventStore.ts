@@ -1,6 +1,6 @@
 import { EventStore, RunningEvent, Step, EndState } from "./events";
 import { dateFromSerial, serialFromDate } from "./spreadsheet"
-import { withAuth } from './google-oauth'
+import { withSpreadsheets } from './google-oauth'
 import { google, Common } from 'googleapis'
 import { duration } from 'moment';
 
@@ -10,7 +10,7 @@ function returnVoid(): void {
 
 export class SpreadsheetEventStore extends EventStore {
   setScheduledStartTime(eventId: string, scheduledStartTime: Date): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
@@ -21,7 +21,7 @@ export class SpreadsheetEventStore extends EventStore {
           values: [ [ serialFromDate(scheduledStartTime) ] ],
         }
       }).then((response) => response.statusText)
-    })()
+    })
   }
   createEvent(
     eventId: string,
@@ -30,7 +30,7 @@ export class SpreadsheetEventStore extends EventStore {
     eventName: string,
     template: string
   ): Promise<void> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.get({
         spreadsheetId: '***REMOVED***',
@@ -77,7 +77,7 @@ export class SpreadsheetEventStore extends EventStore {
           }
         })
       }).then(returnVoid)
-    })()
+    })
   }
 
   getEvent(eventId: string): Promise<RunningEvent> {
@@ -98,7 +98,7 @@ export class SpreadsheetEventStore extends EventStore {
   private stepsOffset = 7
 
   setStepStartTime(eventId: string, stepId: number, startTime: Date): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
@@ -109,7 +109,7 @@ export class SpreadsheetEventStore extends EventStore {
           values: [ [ serialFromDate(startTime) ] ],
         }
       }).then((response) => response.statusText)
-    })()
+    })
   }
 
   stepComplete(
@@ -119,7 +119,7 @@ export class SpreadsheetEventStore extends EventStore {
     state: EndState,
     message: string
   ): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
@@ -130,11 +130,11 @@ export class SpreadsheetEventStore extends EventStore {
           values: [ [ serialFromDate(endTime), state, message ] ],
         }
       }).then((response) => response.statusText)
-    })()
+    })
   }
 
   private getSteps(eventId: string): Promise<Step[]> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
         spreadsheetId: '***REMOVED***',
@@ -160,7 +160,7 @@ export class SpreadsheetEventStore extends EventStore {
         console.log('No data found.');
         throw "No data found"
       });
-    })()
+    })
   }
 
 
@@ -169,7 +169,7 @@ export class SpreadsheetEventStore extends EventStore {
     scheduledStartTime: Date;
     streamId: string;
   }> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
         spreadsheetId: '***REMOVED***',
@@ -187,6 +187,6 @@ export class SpreadsheetEventStore extends EventStore {
         console.log('No data found.');
         throw "No data found"
       });
-    })()
+    })
   }
 }

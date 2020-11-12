@@ -11,7 +11,7 @@ import {
   YoutubeClient,
   PrivacyStatus
 } from './YoutubeClient';
-import { withAuth } from './google-oauth';
+import { withYoutube } from './google-oauth';
 
 export class BufferStream extends Readable {
   _object: Buffer | null;
@@ -52,46 +52,48 @@ function addThumbnail(
 }
 
 export class YoutubeClientImpl extends YoutubeClient {
-  liveBroadcasts: () => Promise<LiveBroadcast[]> = withAuth((auth: Common.OAuth2Client) =>
-    google.youtube('v3').liveBroadcasts.list({
-      part: ['id', 'snippet', 'contentDetails', 'status'],
-      auth: auth,
-      broadcastStatus: "all",
-      maxResults: 20,
-    }).then((response) => {
-      const data = response.data.items;
-      return (data?.flatMap((item) => {
-        const id = item.id
-        const scheduledStartTime = item.snippet?.scheduledStartTime
-        const title = item.snippet?.title
-        const description = item.snippet?.description
-        const lifeCycleStatus = item.status?.lifeCycleStatus
-        const privacyStatus = item.status?.privacyStatus
-        const boundStreamId = item.contentDetails?.boundStreamId
-        if (id &&
-          scheduledStartTime &&
-          title &&
-          lifeCycleStatus &&
-          isLivecycleStatus(lifeCycleStatus) &&
-          privacyStatus &&
-          isPrivacyStatus(privacyStatus)
-        ) {
-          const r: LiveBroadcast = {
-            id,
-            scheduledStartTime: Date.parse(scheduledStartTime),
-            title,
-            description: description || "",
-            status: lifeCycleStatus,
-            privacyStatus,
-            boundStreamId: boundStreamId || null,
+  liveBroadcasts: () => Promise<LiveBroadcast[]> = () => {
+    return withYoutube((auth: Common.OAuth2Client) =>
+      google.youtube('v3').liveBroadcasts.list({
+        part: ['id', 'snippet', 'contentDetails', 'status'],
+        auth: auth,
+        broadcastStatus: "all",
+        maxResults: 20,
+      }).then((response) => {
+        const data = response.data.items;
+        return (data?.flatMap((item) => {
+          const id = item.id
+          const scheduledStartTime = item.snippet?.scheduledStartTime
+          const title = item.snippet?.title
+          const description = item.snippet?.description
+          const lifeCycleStatus = item.status?.lifeCycleStatus
+          const privacyStatus = item.status?.privacyStatus
+          const boundStreamId = item.contentDetails?.boundStreamId
+          if (id &&
+            scheduledStartTime &&
+            title &&
+            lifeCycleStatus &&
+            isLivecycleStatus(lifeCycleStatus) &&
+            privacyStatus &&
+            isPrivacyStatus(privacyStatus)
+          ) {
+            const r: LiveBroadcast = {
+              id,
+              scheduledStartTime: Date.parse(scheduledStartTime),
+              title,
+              description: description || "",
+              status: lifeCycleStatus,
+              privacyStatus,
+              boundStreamId: boundStreamId || null,
+            }
+            return [r];
+          } else {
+            return []
           }
-          return [r];
-        } else {
-          return []
-        }
-      }) || []).sort((a, b) => a.scheduledStartTime < b.scheduledStartTime ? -1 : 1)
-    })
-  )
+        }) || []).sort((a, b) => a.scheduledStartTime < b.scheduledStartTime ? -1 : 1)
+      })
+    )
+  }
 
   createLiveBroadcast(
     title: string,
@@ -101,7 +103,7 @@ export class YoutubeClientImpl extends YoutubeClient {
     streamId: string,
     privacyStatus?: PrivacyStatus
   ): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) =>
+    return withYoutube((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveBroadcasts.insert({
       part: [
         "snippet",
@@ -149,7 +151,7 @@ export class YoutubeClientImpl extends YoutubeClient {
       })
       return addThumbnail(response.data.id || "", auth, thumbnail)
     })
-  )()
+  )
   }
 
   updateLiveBroadcast(
@@ -159,7 +161,7 @@ export class YoutubeClientImpl extends YoutubeClient {
     scheduledStartTime: Date,
     privacyStatus: PrivacyStatus
   ): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) =>
+    return withYoutube((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveBroadcasts.update({
       part: [
         "snippet"
@@ -179,11 +181,11 @@ export class YoutubeClientImpl extends YoutubeClient {
     }).then((response) => {
       return response.status.toString()
     })
-  )()
+  )
   }
 
   updateBroadcastStatus(id: string, status: "live" | "testing" | "complete"): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) =>
+    return withYoutube((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveBroadcasts.transition({
       broadcastStatus: status,
       part: [ ],
@@ -192,11 +194,11 @@ export class YoutubeClientImpl extends YoutubeClient {
     }).then((response) => {
       return response.status.toString()
     })
-  )()
+  )
   }
 
   liveStream(id: string): Promise<LiveStream[]> {
-    return withAuth((auth: Common.OAuth2Client) =>
+    return withYoutube((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveStreams.list({
       "part": [
         "snippet,cdn,contentDetails,status"
@@ -226,46 +228,47 @@ export class YoutubeClientImpl extends YoutubeClient {
         }
       }) || []
     })
-  )()
+  )
   }
 
-  liveStreams: () => Promise<LiveStream[]> =
-    withAuth((auth: Common.OAuth2Client) =>
-    google.youtube('v3').liveStreams.list({
-      "part": [
-        "snippet,cdn,contentDetails,status"
-      ],
-      "mine": true,
-      auth: auth,
-    }).then((response) => {
-      const data = response.data.items;
-      return data?.flatMap((item) => {
-        //item.status?.healthStatus?.status
-        item.status?.streamStatus
-        if (
-          item.id &&
-          item.snippet?.title &&
-          item.status?.streamStatus &&
-          isStreamStatus(item.status?.streamStatus)
-        ) {
-          const r: LiveStream = {
-            title: item.snippet?.title,
-            status: item.status?.streamStatus,
-            id: item.id,
-            healthStatus: item.status?.healthStatus?.status && isHealthStatus(item.status?.healthStatus?.status) ? item.status?.healthStatus?.status : "noData"
+  liveStreams: () => Promise<LiveStream[]> = () => {
+    return withYoutube((auth: Common.OAuth2Client) =>
+      google.youtube('v3').liveStreams.list({
+        "part": [
+          "snippet,cdn,contentDetails,status"
+        ],
+        "mine": true,
+        auth: auth,
+      }).then((response) => {
+        const data = response.data.items;
+        return data?.flatMap((item) => {
+          //item.status?.healthStatus?.status
+          item.status?.streamStatus
+          if (
+            item.id &&
+            item.snippet?.title &&
+            item.status?.streamStatus &&
+            isStreamStatus(item.status?.streamStatus)
+          ) {
+            const r: LiveStream = {
+              title: item.snippet?.title,
+              status: item.status?.streamStatus,
+              id: item.id,
+              healthStatus: item.status?.healthStatus?.status && isHealthStatus(item.status?.healthStatus?.status) ? item.status?.healthStatus?.status : "noData"
+            }
+            return [r];
+          } else {
+            return []
           }
-          return [r];
-        } else {
-          return []
-        }
-      }) || []
-    })
-  )
+        }) || []
+      })
+    )
+  }
 
   liveBroadcast(
     id: string
   ): Promise<LiveBroadcast | null> {
-    return withAuth((auth: Common.OAuth2Client) =>
+    return withYoutube((auth: Common.OAuth2Client) =>
       google.youtube('v3').liveBroadcasts.list({
         part: ['id', 'snippet', 'contentDetails', 'status'],
         id: [ id ],
@@ -307,6 +310,6 @@ export class YoutubeClientImpl extends YoutubeClient {
           return null
         }
       })
-      )()
+      )
   }
 }

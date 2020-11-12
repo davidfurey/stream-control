@@ -1,14 +1,14 @@
 import { StatusStore, ReportedStatus } from "./status";
 import { serialFromDate, dateFromSerial } from "./spreadsheet";
 import { Common, google } from "googleapis";
-import { withAuth } from "./google-oauth";
+import { withSpreadsheets } from "./google-oauth";
 
 function returnVoid(): void {
   // return void
 }
 
 function setCell(ref: string, value: number): Promise<void> {
-  return withAuth((auth: Common.OAuth2Client) => {
+  return withSpreadsheets((auth: Common.OAuth2Client) => {
     const sheets = google.sheets({version: 'v4', auth});
     return sheets.spreadsheets.values.update({
       spreadsheetId: '***REMOVED***',
@@ -19,12 +19,12 @@ function setCell(ref: string, value: number): Promise<void> {
         values: [ [ value ] ],
       }
     }).then(returnVoid)
-  })()
+  })
 }
 
 export class SpreadsheetStatusStore extends StatusStore {
   get(): Promise<ReportedStatus> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
         spreadsheetId: '***REMOVED***',
@@ -48,7 +48,7 @@ export class SpreadsheetStatusStore extends StatusStore {
           throw "No data found"
         }
       });
-    })()
+    })
   }
   reportRunningEventsCount(count: number): Promise<void> {
     return setCell("B1", count)

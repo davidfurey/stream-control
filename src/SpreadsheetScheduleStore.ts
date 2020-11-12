@@ -3,13 +3,13 @@ import { dateFromSerial } from "./spreadsheet"
 import { google, Common } from 'googleapis'
 import { duration } from 'moment';
 import { ScheduleStore } from "./schedules";
-import { withAuth } from "./google-oauth";
+import { withSpreadsheets } from "./google-oauth";
 
 
 export class SpreadsheetScheduleStore extends ScheduleStore {
 
   getSchedules(): Promise<string[]> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.get({
         spreadsheetId: '***REMOVED***',
@@ -21,11 +21,11 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
         ) || []
         return sheetTitles.filter((title) => title.startsWith("schedule/")).map((title) => title.substring(9))
       })
-    })()
+    })
   }
 
   setYoutubeId(scheduleName: string, row: number, youTubeId: string): Promise<string> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
@@ -36,11 +36,11 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
           values: [ [ youTubeId ] ],
         }
       }).then((response) => response.statusText)
-    })()
+    })
   }
 
   listEvents(scheduleName: string, filter?: EventFilter): Promise<Event[]> {
-    return withAuth((auth: Common.OAuth2Client) => {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
         spreadsheetId: '***REMOVED***',
@@ -80,6 +80,6 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
           throw "No data found"
         }
       });
-    })()
+    })
   }
 }
