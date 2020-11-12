@@ -44,7 +44,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
         spreadsheetId: '***REMOVED***',
-        range: `schedule/${scheduleName}!A2:O`,
+        range: `schedule/${scheduleName}!A2:P`,
         valueRenderOption: 'UNFORMATTED_VALUE'
       }).then((res) => {
         const rows = res.data.values;
