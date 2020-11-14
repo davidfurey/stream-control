@@ -24,8 +24,15 @@ export interface RunningEvent {
   running: boolean;
 }
 
+export interface EventMetadata {
+  name: string;
+  scheduledStartTime: Date;
+  streamId: string;
+}
+
 export abstract class EventStore {
   abstract getEvent(eventId: string): Promise<RunningEvent>
+  abstract deleteEvent(eventId: string): Promise<void>
   abstract setStepStartTime(eventId: string, stepId: number, startTime: Date): Promise<string>
   abstract setScheduledStartTime(eventId: string, scheduledStartTime: Date): Promise<string>
   abstract stepComplete(
@@ -41,4 +48,6 @@ export abstract class EventStore {
     eventName: string,
     template: string
   ): Promise<void>
+  abstract getMetadata(eventId: string): Promise<EventMetadata>
+  abstract getEvents(): Promise<string[]>
 }

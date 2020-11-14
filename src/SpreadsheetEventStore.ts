@@ -1,4 +1,4 @@
-import { EventStore, RunningEvent, Step, EndState } from "./events";
+import { EventStore, RunningEvent, Step, EndState, EventMetadata } from "./events";
 import { dateFromSerial, serialFromDate } from "./spreadsheet"
 import { withSpreadsheets } from './google-oauth'
 import { google, Common } from 'googleapis'
@@ -95,6 +95,37 @@ export class SpreadsheetEventStore extends EventStore {
     )
   }
 
+  deleteEvent(eventId: string): Promise<void> {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
+      const sheets = google.sheets({version: 'v4', auth});
+      return sheets.spreadsheets.get({
+        spreadsheetId: '***REMOVED***',
+        ranges: [],
+        includeGridData: false
+      }).then((response) => {
+        const eventSheet = response.data.sheets?.find((sheet) => sheet.properties?.title === `event/${eventId}`)
+        const sheetId = eventSheet?.properties?.sheetId
+        if (sheetId) {
+          return sheets.spreadsheets.batchUpdate({
+            spreadsheetId: '***REMOVED***',
+            requestBody: {
+              requests: [
+                {
+                  deleteSheet: {
+                    sheetId
+                  }
+                }
+              ],
+              includeSpreadsheetInResponse: false
+            }
+          }).then(returnVoid)
+        } else {
+          throw `Could not find sheet for eventId=${eventId}`
+        }
+      })
+    })
+  }
+
   private stepsOffset = 7
 
   setStepStartTime(eventId: string, stepId: number, startTime: Date): Promise<string> {
@@ -164,11 +195,7 @@ export class SpreadsheetEventStore extends EventStore {
   }
 
 
-  private getMetadata(eventId: string): Promise<{
-    name: string;
-    scheduledStartTime: Date;
-    streamId: string;
-  }> {
+  getMetadata(eventId: string): Promise<EventMetadata> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
@@ -187,6 +214,22 @@ export class SpreadsheetEventStore extends EventStore {
         console.log('No data found.');
         throw "No data found"
       });
+    })
+  }
+
+  getEvents(): Promise<string[]> {
+    return withSpreadsheets((auth: Common.OAuth2Client) => {
+      const sheets = google.sheets({version: 'v4', auth});
+      return sheets.spreadsheets.get({
+        spreadsheetId: '***REMOVED***',
+        ranges: [],
+        includeGridData: false,
+      }).then((response) => {
+        const sheetTitles = response.data.sheets?.flatMap((sheet) =>
+          sheet.properties?.title ? [sheet.properties?.title] : []
+        ) || []
+        return sheetTitles.filter((title) => title.startsWith("event/")).map((title) => title.substring(6))
+      })
     })
   }
 }
