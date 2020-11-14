@@ -12,6 +12,10 @@ import { CachedYoutubeClient } from '../CachedYoutubeClient';
 import { isYoutubeErrorResponse } from '../YoutubeClient';
 import { scheduleTasks } from '../scheduled_tasks';
 
+process.on('unhandledRejection', (error) => {
+  console.log(error);
+});
+
 const port = process.env.PORT || 3041;
 
 const app = express();
