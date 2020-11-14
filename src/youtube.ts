@@ -98,7 +98,7 @@ export class YoutubeClientImpl extends YoutubeClient {
   createLiveBroadcast(
     title: string,
     description: string,
-    thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer},
+    thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer} | null,
     scheduledStartTime: Date,
     streamId: string,
     privacyStatus?: PrivacyStatus
@@ -149,7 +149,10 @@ export class YoutubeClientImpl extends YoutubeClient {
         },
         auth
       })
-      return addThumbnail(response.data.id || "", auth, thumbnail)
+      if (thumbnail) {
+        return addThumbnail(response.data.id || "", auth, thumbnail)
+      }
+      return response.data.id || ""
     })
   )
   }
