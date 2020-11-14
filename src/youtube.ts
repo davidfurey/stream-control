@@ -164,7 +164,8 @@ export class YoutubeClientImpl extends YoutubeClient {
     return withYoutube((auth: Common.OAuth2Client) =>
     google.youtube('v3').liveBroadcasts.update({
       part: [
-        "snippet"
+        "snippet",
+        "status"
       ],
       requestBody: {
         id,
