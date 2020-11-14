@@ -1,5 +1,4 @@
 import { YoutubeClientImpl } from '../youtube'
-import fs from 'fs'
 import { EventStore } from '../events'
 import { ScheduleStore, creationOverdue, okay, Event } from '../schedules'
 import { fileByPath } from '../drive'
