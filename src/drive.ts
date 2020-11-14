@@ -7,7 +7,7 @@ function directoryId(parent: string, name: string): Promise<string | null> {
     const drive = google.drive({ version: 'v3', auth})
     return drive.files.list({
       "corpus": "user",
-      "q": `name = '${name}' and '${parent}' in parents and mimeType = 'application/vnd.google-apps.folder'`
+      "q": `name contains '${name}' and '${parent}' in parents and mimeType = 'application/vnd.google-apps.folder'`
     }).then((response) => {
       if (response.data.files && response.data.files.length > 0) {
         return response.data.files[0].id || null
