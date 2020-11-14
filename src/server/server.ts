@@ -4,8 +4,6 @@ import compression from 'compression';
 import * as http from 'http';
 import { SpreadsheetEventStore } from '../SpreadsheetEventStore'
 import { createEvents, validateEvents } from './create-events';
-import { setScene, startStreaming, stopStreaming, setSceneCollection } from '../obs';
-import { EventRunner } from '../eventrunner'
 import { SpreadsheetScheduleStore } from '../SpreadsheetScheduleStore';
 import { SpreadsheetStatusStore } from '../SpreadsheetStatusStore';
 import { CachedYoutubeClient } from '../CachedYoutubeClient';
