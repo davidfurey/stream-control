@@ -1,6 +1,6 @@
 {
   "name": "stream-control",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "Service to allow automatic and manual control of Youtube live stream",
   "private": true,
   "scripts": {
