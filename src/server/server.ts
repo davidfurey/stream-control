@@ -83,24 +83,6 @@ app.get('/youtube/upcoming', (_req, res) => {
   })
 })
 
-// app.post('/youtube/create', (_req, res) => {
-//   fs.readFile('/home/david/Downloads/0_Welcome.jpg', function(err, data) {
-//     if (err) {
-//       res.send("Error reading thumbnail")
-//     } else {
-//       createLiveBroadcast(
-//         "Test Stream 2",
-//         "Test description 2",
-//         {
-//           mimeType: "image/jpeg",
-//           data: data
-//         },
-//         new Date()
-//       ).then((r) => res.send(`response is ${r}`))
-//     }
-//   })
-// })
-
 app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
   const eventId = req.params['eventId']
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,33 +109,6 @@ app.post('/general/create-events', (_req, res) => {
 app.post('/general/validate-events', (_req, res) => {
   validateEvents(scheduleStore, eventStore)
   res.send("ACCEPTED")
-})
-
-
-app.post('/obs/set-scene', (_req, res) => {
-  setScene("Centre")
-  res.send("OK")
-})
-
-app.post('/obs/start-stream', (_req, res) => {
-  startStreaming()
-  res.send("OK")
-})
-
-app.post('/obs/stop-stream', (_req, res) => {
-  stopStreaming()
-  res.send("OK")
-})
-
-app.post('/obs/set-scene-collection', (_req, res) => {
-  setSceneCollection("Wedding")
-  res.send("OK")
-})
-
-app.post('/start-event', (_req, res) => {
-  const runner = new EventRunner(eventStore, "1234")
-  runner.start()
-  res.send("OK")
 })
 
 server.listen(port, () => {
