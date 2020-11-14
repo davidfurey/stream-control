@@ -3,11 +3,12 @@ import readline from 'readline'
 import { Common, Auth } from 'googleapis'
 import { Credentials } from 'google-auth-library';
 
-type TokenScope = "spreadsheets" | "youtube"
+type TokenScope = "spreadsheets" | "youtube" | "drive"
 
 const SCOPES: Record<TokenScope, string[]> = {
   "spreadsheets": [ 'https://www.googleapis.com/auth/spreadsheets' ],
-  "youtube": [ 'https://www.googleapis.com/auth/youtube' ]
+  "youtube": [ 'https://www.googleapis.com/auth/youtube' ],
+  "drive": [ 'https://www.googleapis.com/auth/drive.readonly' ]
 }
 
 const CONFIG_DIR = process.env.CONFIG_DIR || '/etc/stream-control/';
@@ -15,6 +16,7 @@ const CONFIG_DIR = process.env.CONFIG_DIR || '/etc/stream-control/';
 const TOKEN_PATHS: Record<TokenScope, string> = {
   "youtube": CONFIG_DIR + 'youtube-token.json',
   "spreadsheets": CONFIG_DIR + 'spreadsheets-token.json',
+  "drive": CONFIG_DIR + "drive-token.json"
 }
 
 const CLIENT_SECRET_PATH = CONFIG_DIR + 'client_secret.json'
@@ -109,6 +111,12 @@ export function withSpreadsheets<T>(
   fn: (auth: Common.OAuth2Client
 ) => Promise<T>): Promise<T> {
   return withAuth("spreadsheets", fn)()
+}
+
+export function withDrive<T>(
+  fn: (auth: Common.OAuth2Client
+) => Promise<T>): Promise<T> {
+  return withAuth("drive", fn)()
 }
 
 type ClientSecret = {
