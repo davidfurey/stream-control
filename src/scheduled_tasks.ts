@@ -91,7 +91,18 @@ function tenMinuteJob(stores: DataStores) {
 function dailyJob(stores: DataStores) {
   return (): void => {
     console.log("Daily job")
-  // todo: clean up old sheets
+    const now = new Date().getTime()
+    const sevenDays = 7 * 24 * 60 * 60 * 1000
+    stores.events.getEvents().then((events) => {
+      events.map((eventId) => {
+        stores.events.getMetadata(eventId).then((metadata) => {
+          if ((now - metadata.scheduledStartTime.getTime()) > sevenDays) {
+            console.log(`Event ${metadata.name} (${eventId}), is older than 6 days, deleting log`)
+            //stores.events.deleteEvent(eventId)
+          }
+        })
+      })
+    })
     stores.status.reportRanCleanupTask(new Date())
   }
 }
