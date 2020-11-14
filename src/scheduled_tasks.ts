@@ -47,6 +47,12 @@ function fiveMinuteJob(stores: DataStores) {
         })
       }))
     }).then(() => {
+      Object.values(eventRunners).forEach((eventRunner) => {
+        if (!eventRunner.running) {
+          console.log(`Cleaning up concluded event ${eventRunner.eventId}`)
+          delete eventRunners[eventRunner.eventId]
+        }
+      })
       stores.status.reportRunningEventsCount(Object.values(eventRunners).length)
       stores.status.reportCheckedForIminentEvents(new Date())
     })
