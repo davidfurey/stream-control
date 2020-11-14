@@ -2,21 +2,27 @@ import { YoutubeClientImpl } from '../youtube'
 import fs from 'fs'
 import { EventStore } from '../events'
 import { ScheduleStore, creationOverdue, okay, Event } from '../schedules'
+import { fileByPath } from '../drive'
+
+type Thumbnail = {
+  mimeType: "image/jpeg" | "image/png";
+  data: Buffer;
+}
 
 const youtubeClient = new YoutubeClientImpl()
 function returnVoid(): void {
   // return void
 }
 
-function eventCreator(
+function createEvent(
   scheduleStore: ScheduleStore,
   eventStore: EventStore,
   d: Event,
   schedule: string,
-  thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer}
-): () => Promise<void | undefined> {
+  thumbnail: Thumbnail | null
+): Promise<void | undefined> {
   console.log(`Creating event for ${d.eventName} (${schedule})`)
-  return (): Promise<void | undefined> => youtubeClient.createLiveBroadcast(
+  return youtubeClient.createLiveBroadcast(
     d.eventName,
     d.description,
     thumbnail,
@@ -52,39 +58,44 @@ export function promiseSequence<T>(fns: (() => Promise<T>)[], result: T[] = []):
   }
 }
 
+function getThumbnail(filename: string): Promise<Thumbnail | null> {
+  return fileByPath(filename).then((buf) => {
+    const thumbnail: Thumbnail = {
+      mimeType: "image/png",
+      data: buf
+    }
+    return thumbnail
+  }).catch(() => null)
+}
+
+function createForSchedule(
+  schedule: string,
+  scheduleStore: ScheduleStore,
+  eventStore: EventStore
+): Promise<(() => Promise<void>)[]> {
+  return scheduleStore.listEvents(schedule, creationOverdue).then((events) =>
+    events.map((event) => (): Promise<void> =>
+      getThumbnail(event.thumbnail).then((thumbnail) =>
+        createEvent(
+          scheduleStore,
+          eventStore,
+          event,
+          schedule,
+          thumbnail
+        )
+      )
+    )
+  )
+}
 export function createEvents(scheduleStore: ScheduleStore, eventStore: EventStore): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fs.readFile('/home/user/Documents/general_slides/SA_mass_welcome.png', function(err, data) {
-      if (err) {
-        console.log("Error reading thumbnail")
-        reject("Error reading thumbnail")
-      } else {
-        const thumbnail: { mimeType: "image/jpeg" | "image/png"; data: Buffer} = {
-          mimeType: "image/jpeg",
-          data: data
-        }
-        scheduleStore.getSchedules().then((schedules) =>
-          Promise.all(
-            schedules.map((schedule) =>
-              scheduleStore.listEvents(schedule, creationOverdue).then((events) =>
-                events.map((d) =>
-                  eventCreator(
-                    scheduleStore,
-                    eventStore,
-                    d,
-                    schedule,
-                    thumbnail
-                  )
-                )
-              )
-            )
-          )
-        ).then((r) => promiseSequence(r.flat())
-        ).then(() => resolve()
-        ).catch(reject)
-      }
-    })
-  })
+  return scheduleStore.getSchedules().then((schedules) =>
+    Promise.all(
+      schedules.map((schedule) =>
+        createForSchedule(schedule, scheduleStore, eventStore)
+      )
+    )
+  ).then((r) => promiseSequence(r.flat())
+  ).then(returnVoid)
 }
 
 // app.get('/spreadsheet/compare', (_req, res) => {
