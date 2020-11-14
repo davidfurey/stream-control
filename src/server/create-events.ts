@@ -112,6 +112,10 @@ export function createEvents(scheduleStore: ScheduleStore, eventStore: EventStor
 function compare<T>(name: string, a: T, b: T): boolean {
   if (a !== b) {
     console.log(`${name}s do not match`)
+    console.log("Expected:")
+    console.log(a)
+    console.log("Actual:")
+    console.log(b)
     return false
   }
   return true
