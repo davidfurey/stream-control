@@ -9,6 +9,7 @@ import { SpreadsheetStatusStore } from '../SpreadsheetStatusStore';
 import { CachedYoutubeClient } from '../CachedYoutubeClient';
 import { isYoutubeErrorResponse } from '../YoutubeClient';
 import { scheduleTasks } from '../scheduled_tasks';
+import { send as sendEmail} from '../email';
 
 process.on('unhandledRejection', (error) => {
   console.log(error);
@@ -29,6 +30,7 @@ const statusStore = new SpreadsheetStatusStore()
 const youtubeClient = new CachedYoutubeClient()
 
 statusStore.reportAppStarted(new Date())
+sendEmail("Starting stream automation", "Application starting")
 
 scheduleTasks({
   events: eventStore,

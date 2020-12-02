@@ -40,7 +40,7 @@ function fiveMinuteJob(stores: DataStores) {
           events.map((evt) => {
             if (evt.eventId && eventRunners[evt.eventId] === undefined) {
               console.log(`Starting event ${evt.eventId}`)
-              eventRunners[evt.eventId] = new EventRunner(stores.events, evt.eventId)
+              eventRunners[evt.eventId] = new EventRunner(evt.eventName, stores.events, evt.eventId)
               eventRunners[evt.eventId].start()
             }
           })
