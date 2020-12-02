@@ -1,12 +1,23 @@
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 export function send(
-  from: string,
-  to: string,
   subject: string,
   message: string): Promise<void> {
-  console.error("Sending error email")
-  console.error(`From: ${from}`)
-  console.error(`To: ${to}`)
-  console.error(`Subject: ${subject}`)
-  console.error(`${message}`)
-  return Promise.resolve()
+
+  return transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: process.env.EMAIL_RECIPIENTS,
+    subject,
+    text: message
+  });
 }

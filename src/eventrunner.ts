@@ -1,7 +1,9 @@
 import { EventStore, RunningEvent, Step } from "./events"
 import { process as processCommand } from './command_processor';
+import { send as sendEmail } from './email'
 
 export class EventRunner {
+  name: string
   store: EventStore
   eventId: string
   event: RunningEvent
@@ -10,10 +12,12 @@ export class EventRunner {
     [stepId: string]: NodeJS.Timeout;
   } = {}
 
-  constructor(store: EventStore, eventId: string) {
+  constructor(name: string, store: EventStore, eventId: string) {
+    this.name = name
     this.store = store
     this.eventId = eventId
     this.running = false
+    sendEmail("Event preparing", `Preparing to stream "${this.name}"`)
   }
 
   private triggerTime(
@@ -58,6 +62,10 @@ export class EventRunner {
               this.event.steps[step.id - 1].endTime = endTime
               this.event.steps[step.id - 1].endState = "Success"
               this.event.steps[step.id - 1].message = JSON.stringify(err)
+              sendEmail(
+                "Event error", `Failure encountered during event "${this.name}"\n` +
+                `${this.event.steps[step.id - 1].action} (${this.event.steps[step.id - 1].parameter1}) returned error ${JSON.stringify(err)}`
+              )
               return this.store.stepComplete(event.eventId, step.id, endTime, "Failure", JSON.stringify(err))
             })
           },

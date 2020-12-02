@@ -66,25 +66,19 @@ function tenMinuteJob(stores: DataStores) {
     stores.status.get().then((status) => {
       if ((now.getTime() - status.lastCheckedForIminentEvents.getTime()) > (6 * 60 * 1000)) {
         sendEmail(
-          "monitor@streaming",
-          "operator@streaming",
-          "Check failure",
+          "Scheduler error",
           `Should check for soon to start events every 5 minutes, but last check was at ${status.lastCheckedForIminentEvents}`
         )
       }
       if ((now.getTime() - status.lastRanCleanupTask.getTime()) > (25 * 60 * 60 * 1000)) {
         sendEmail(
-          "monitor@streaming",
-          "operator@streaming",
-          "Check failure",
+          "Scheduler error",
           `Should run cleanup task once a day, but last run was at ${status.lastRanCleanupTask}`
         )
       }
       if ((now.getTime() - status.lastValidatedEvents.getTime()) > (65 * 60 * 1000)) {
         sendEmail(
-          "monitor@streaming",
-          "operator@streaming",
-          "Check failure",
+          "Scheduler error",
           `Should validate events once an hour, but last run was at ${status.lastValidatedEvents}`
         )
       }
