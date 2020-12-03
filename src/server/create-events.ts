@@ -1,6 +1,6 @@
 import { YoutubeClientImpl } from '../youtube'
 import { EventStore } from '../events'
-import { ScheduleStore, creationOverdue, okay, Event } from '../schedules'
+import { ScheduleStore, creationOverdue, videoCreated, Event } from '../schedules'
 import { fileByPath } from '../drive'
 
 type Thumbnail = {
@@ -186,7 +186,7 @@ export function validateEvents(
 ): Promise<void> {
   return scheduleStore.getSchedules().then((schedules) => {
     return Promise.all(schedules.map((schedule) => {
-      return scheduleStore.listEvents(schedule, okay).then((schedules) => {
+      return scheduleStore.listEvents(schedule, videoCreated).then((schedules) => {
         schedules.map((d) => {
           console.log(`Validating event ${d.eventName}`)
           return validateSchedule(d, eventStore)

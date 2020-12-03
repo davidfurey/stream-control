@@ -37,6 +37,7 @@ export type EventFilter = (evt: Event) => boolean
 
 export const creationOverdue = (event: Event): boolean => event.lifecycle === "Creation overdue"
 export const okay = (event: Event): boolean => event.lifecycle === "Okay"
+export const videoCreated = (event: Event): boolean => event.lifecycle === "Okay" && !!event.eventId
 export const imminentAutomated = (event: Event): boolean =>
   Math.abs(event.firstEventTime.getTime() - new Date().getTime()) < 600000 && event.automated
 
