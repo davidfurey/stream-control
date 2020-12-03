@@ -22,7 +22,7 @@ function poll(
       }
     }
   }).catch((e) => {
-    console.error(`Error (${e} while polling, retrying anyway`)
+    console.warn(`Error (${e} while polling, retrying anyway`)
     if (maxAttempts > 0) {
       setTimeout(() => poll(fn, resolve, reject, maxAttempts - 1), 1000)
     } else {
