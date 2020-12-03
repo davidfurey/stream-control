@@ -37,6 +37,8 @@ export type EventFilter = (evt: Event) => boolean
 
 export const creationOverdue = (event: Event): boolean => event.lifecycle === "Creation overdue"
 export const okay = (event: Event): boolean => event.lifecycle === "Okay"
+export const imminentAutomated = (event: Event): boolean =>
+  Math.abs(event.firstEventTime.getTime() - new Date().getTime()) < 600000 && event.automated
 
 
 export abstract class ScheduleStore {

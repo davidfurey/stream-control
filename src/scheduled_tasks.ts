@@ -3,9 +3,10 @@ import { send as sendEmail } from './email';
 import { createEvents, validateEvents } from './server/create-events';
 import { EventRunner } from './eventrunner';
 import { EventStore } from './events';
-import { ScheduleStore } from './schedules';
+import { imminentAutomated, ScheduleStore } from './schedules';
 import { StatusStore } from './status';
 import { overrunEvent, scheduledTaskMissed } from './email-templates/generic';
+import { Duration, duration } from 'moment';
 
 const eventRunners: {
   [eventId: string]: EventRunner;
@@ -17,27 +18,23 @@ interface DataStores {
   status: StatusStore;
 }
 
-function hourlyJob(stores: DataStores) {
+function createAndValidateEvents(stores: DataStores) {
   return (): void => {
-    console.log("Hourly job")
+    console.log("Checking for events that should be created")
     createEvents(stores.schedules, stores.events).then(() => {
+      console.log("Validating upcoming events")
       return validateEvents(stores.schedules, stores.events)
     }).then(() => stores.status.reportValidatedEvents(new Date()))
   }
 }
 
 
-function fiveMinuteJob(stores: DataStores) {
+function startIminentEvents(stores: DataStores) {
   return (): void => {
-    console.log("5 min job")
+    console.log("Check for iminent events")
     stores.schedules.getSchedules().then((schedules) => {
       return Promise.all(schedules.map((schedule) => {
-        return stores.schedules.listEvents(
-          schedule,
-          (evt) =>
-            Math.abs(evt.firstEventTime.getTime() - new Date().getTime()) < 600000 &&
-            evt.automated
-        ).then((events) => {
+        return stores.schedules.listEvents(schedule, imminentAutomated).then((events) => {
           events.map((evt) => {
             if (evt.eventId && eventRunners[evt.eventId] === undefined) {
               console.log(`Starting event ${evt.eventId}`)
@@ -54,6 +51,7 @@ function fiveMinuteJob(stores: DataStores) {
         })
       }))
     }).then(() => {
+      console.log("Check for concluded events")
       Object.values(eventRunners).forEach((eventRunner) => {
         if (!eventRunner.running &&
           (new Date().getTime() - eventRunner.firstEventTime.getTime()) > 630000) {
@@ -67,30 +65,26 @@ function fiveMinuteJob(stores: DataStores) {
   }
 }
 
-function tenMinuteJob(stores: DataStores) {
+
+function checkDuration(name: string, eventTime: Date, duration: Duration): void {
+  if ((new Date().getTime() - eventTime.getTime()) > duration.asMilliseconds() * 1.1) {
+    console.error(`${name} is overdue`)
+    sendEmail(
+      "Scheduler error",
+      scheduledTaskMissed(name, duration.humanize(), eventTime)
+    )
+  }
+}
+
+function monitoringJob(stores: DataStores) {
   return (): void => {
-    console.log("10 minute job")
-    const now = new Date()
     stores.status.get().then((status) => {
-      if ((now.getTime() - status.lastCheckedForIminentEvents.getTime()) > (6 * 60 * 1000)) {
-        sendEmail(
-          "Scheduler error",
-          scheduledTaskMissed("iminent events check", "5 minutes", status.lastCheckedForIminentEvents)
-        )
-      }
-      if ((now.getTime() - status.lastRanCleanupTask.getTime()) > (25 * 60 * 60 * 1000)) {
-        sendEmail(
-          "Scheduler error",
-          scheduledTaskMissed("cleanup", "day", status.lastRanCleanupTask)
-        )
-      }
-      if ((now.getTime() - status.lastValidatedEvents.getTime()) > (65 * 60 * 1000)) {
-        sendEmail(
-          "Scheduler error",
-          scheduledTaskMissed("validate events", "hour", status.lastValidatedEvents)
-        )
-      }
+      console.log("Checking scheduled tasks have run")
+      checkDuration("iminent events check", status.lastCheckedForIminentEvents, duration(5, "minutes"))
+      checkDuration("cleanup", status.lastCheckedForIminentEvents, duration(1, "day"))
+      checkDuration("validate events", status.lastCheckedForIminentEvents, duration(1, "hour"))
     })
+    console.log("Checking for over running events")
     Object.values(eventRunners).forEach((eventRunner) => {
       if (eventRunner.running &&
         new Date().getTime() > eventRunner.lastEventTime.getTime()) {
@@ -106,16 +100,15 @@ function tenMinuteJob(stores: DataStores) {
   }
 }
 
-function dailyJob(stores: DataStores) {
+function cleanupSpreadsheet(stores: DataStores) {
   return (): void => {
-    console.log("Daily job")
+    console.log("Cleaning up spreadsheet")
     const now = new Date().getTime()
-    const sevenDays = 7 * 24 * 60 * 60 * 1000
     stores.events.getEvents().then((events) => {
       events.map((eventId) => {
         stores.events.getMetadata(eventId).then((metadata) => {
-          if ((now - metadata.scheduledStartTime.getTime()) > sevenDays) {
-            console.log(`Event ${metadata.name} (${eventId}), is older than 6 days, deleting log`)
+          if ((now - metadata.scheduledStartTime.getTime()) > duration(7, "days").asMilliseconds()) {
+            console.log(`Event ${metadata.name} (${eventId}), is older than 7 days, deleting log`)
             stores.events.deleteEvent(eventId)
           }
         })
@@ -127,8 +120,8 @@ function dailyJob(stores: DataStores) {
 
 export function scheduleTasks(stores: DataStores): void {
   console.log("Scheduling regular tasks")
-  schedule.scheduleJob('0 * * * *',  hourlyJob(stores))
-  schedule.scheduleJob('*/5 * * * *',  fiveMinuteJob(stores))
-  schedule.scheduleJob('*/10 * * * *', tenMinuteJob(stores))
-  schedule.scheduleJob('7 2 * * *', dailyJob(stores))
+  schedule.scheduleJob('0 * * * *',  createAndValidateEvents(stores))
+  schedule.scheduleJob('*/5 * * * *',  startIminentEvents(stores))
+  schedule.scheduleJob('*/10 * * * *', monitoringJob(stores))
+  schedule.scheduleJob('7 2 * * *', cleanupSpreadsheet(stores))
 }
