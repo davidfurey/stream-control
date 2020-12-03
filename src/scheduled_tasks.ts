@@ -40,7 +40,12 @@ function fiveMinuteJob(stores: DataStores) {
           events.map((evt) => {
             if (evt.eventId && eventRunners[evt.eventId] === undefined) {
               console.log(`Starting event ${evt.eventId}`)
-              eventRunners[evt.eventId] = new EventRunner(evt.eventName, stores.events, evt.eventId)
+              eventRunners[evt.eventId] = new EventRunner(
+                evt.eventName,
+                evt.firstEventTime,
+                stores.events,
+                evt.eventId
+              )
               eventRunners[evt.eventId].start()
             }
           })
@@ -48,7 +53,8 @@ function fiveMinuteJob(stores: DataStores) {
       }))
     }).then(() => {
       Object.values(eventRunners).forEach((eventRunner) => {
-        if (!eventRunner.running) {
+        if (!eventRunner.running &&
+          (new Date().getTime() - eventRunner.firstEventTime.getTime()) > 630000) {
           console.log(`Cleaning up concluded event ${eventRunner.eventId}`)
           delete eventRunners[eventRunner.eventId]
         }

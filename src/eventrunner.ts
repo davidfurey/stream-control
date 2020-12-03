@@ -8,11 +8,17 @@ export class EventRunner {
   eventId: string
   event: RunningEvent
   running: boolean
+  firstEventTime: Date
   timeouts: {
     [stepId: string]: NodeJS.Timeout;
   } = {}
 
-  constructor(name: string, store: EventStore, eventId: string) {
+  constructor(
+    name: string,
+    firstEventTime: Date,
+    store: EventStore,
+    eventId: string,
+  ) {
     this.name = name
     this.store = store
     this.eventId = eventId
