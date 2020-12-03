@@ -17,7 +17,7 @@ export class EventRunner {
     this.store = store
     this.eventId = eventId
     this.running = false
-    sendEmail("Event preparing", `Preparing to stream "${this.name}"`)
+    this.firstEventTime = firstEventTime
   }
 
   private triggerTime(
@@ -95,6 +95,7 @@ export class EventRunner {
 
   start(): void {
     this.store.getEvent(this.eventId).then((evt) => {
+      sendEmail("Event preparing", `Starting event loop for "${this.name}". `)
       this.event = evt
       this.running = true
       this.eventLoop()
