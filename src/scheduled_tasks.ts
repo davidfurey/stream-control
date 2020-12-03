@@ -129,5 +129,5 @@ export function scheduleTasks(stores: DataStores): void {
   schedule.scheduleJob('0 * * * *',  hourlyJob(stores))
   schedule.scheduleJob('*/5 * * * *',  fiveMinuteJob(stores))
   schedule.scheduleJob('*/10 * * * *', tenMinuteJob(stores))
-  schedule.scheduleJob('* 2 * * *', dailyJob(stores))
+  schedule.scheduleJob('7 2 * * *', dailyJob(stores))
 }
