@@ -5,6 +5,7 @@ import { EventRunner } from './eventrunner';
 import { EventStore } from './events';
 import { ScheduleStore } from './schedules';
 import { StatusStore } from './status';
+import { overrunEvent, scheduledTaskMissed } from './email-templates/generic';
 
 const eventRunners: {
   [eventId: string]: EventRunner;
@@ -74,19 +75,19 @@ function tenMinuteJob(stores: DataStores) {
       if ((now.getTime() - status.lastCheckedForIminentEvents.getTime()) > (6 * 60 * 1000)) {
         sendEmail(
           "Scheduler error",
-          `Should check for soon to start events every 5 minutes, but last check was at ${status.lastCheckedForIminentEvents}`
+          scheduledTaskMissed("iminent events check", "5 minutes", status.lastCheckedForIminentEvents)
         )
       }
       if ((now.getTime() - status.lastRanCleanupTask.getTime()) > (25 * 60 * 60 * 1000)) {
         sendEmail(
           "Scheduler error",
-          `Should run cleanup task once a day, but last run was at ${status.lastRanCleanupTask}`
+          scheduledTaskMissed("cleanup", "day", status.lastRanCleanupTask)
         )
       }
       if ((now.getTime() - status.lastValidatedEvents.getTime()) > (65 * 60 * 1000)) {
         sendEmail(
           "Scheduler error",
-          `Should validate events once an hour, but last run was at ${status.lastValidatedEvents}`
+          scheduledTaskMissed("validate events", "hour", status.lastValidatedEvents)
         )
       }
     })
@@ -96,7 +97,7 @@ function tenMinuteJob(stores: DataStores) {
         console.error(`Event ${eventRunner.name} due to finish at ${eventRunner.lastEventTime} still running at ${new Date()}. Stopping now.`)
         sendEmail(
           "Overrunning event",
-          `Event ${eventRunner.name} due to finish at ${eventRunner.lastEventTime} still running at ${new Date()}. Stopping now.`
+          overrunEvent(eventRunner)
         )
         eventRunner.stopEvent(true)
       }

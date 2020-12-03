@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import { fromString as htmlToText } from "html-to-text"
+import ReactDOMServer from 'react-dom/server';
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -12,12 +14,13 @@ const transporter = nodemailer.createTransport({
 
 export function send(
   subject: string,
-  message: string): Promise<void> {
-
+  message: JSX.Element): Promise<void> {
+  const html =  ReactDOMServer.renderToString(message)
   return transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: process.env.EMAIL_RECIPIENTS,
     subject,
-    text: message
+    text: htmlToText(html),
+    html
   });
 }

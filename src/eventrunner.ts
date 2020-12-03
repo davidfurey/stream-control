@@ -1,6 +1,7 @@
 import { EventStore, RunningEvent, Step } from "./events"
 import { process as processCommand, stopYoutubeLiveBroadcast } from './command_processor';
 import { send as sendEmail } from './email'
+import { startingEvent, stepFailure } from "./email-templates/generic";
 
 export class EventRunner {
   name: string
@@ -72,8 +73,8 @@ export class EventRunner {
               this.event.steps[step.id - 1].endState = "Success"
               this.event.steps[step.id - 1].message = JSON.stringify(err)
               sendEmail(
-                "Event error", `Failure encountered during event "${this.name}"\n` +
-                `${this.event.steps[step.id - 1].action} (${this.event.steps[step.id - 1].parameter1}) returned error ${JSON.stringify(err)}`
+                "Event error",
+                stepFailure(this.name, this.event, step.id, JSON.stringify(err))
               )
               return this.store.stepComplete(event.eventId, step.id, endTime, "Failure", JSON.stringify(err))
             })
@@ -104,7 +105,7 @@ export class EventRunner {
 
   start(): void {
     this.store.getEvent(this.eventId).then((evt) => {
-      sendEmail("Event preparing", `Starting event loop for "${this.name}". `)
+      sendEmail("Event preparing", startingEvent(this.name, this.event))
       this.event = evt
       this.running = true
       this.eventLoop()
