@@ -43,6 +43,7 @@ function fiveMinuteJob(stores: DataStores) {
               eventRunners[evt.eventId] = new EventRunner(
                 evt.eventName,
                 evt.firstEventTime,
+                evt.lastestEndTime,
                 stores.events,
                 evt.eventId
               )
@@ -89,7 +90,17 @@ function tenMinuteJob(stores: DataStores) {
         )
       }
     })
-    // todo: check for stuck events, and stop youtube stream, and email
+    Object.values(eventRunners).forEach((eventRunner) => {
+      if (eventRunner.running &&
+        new Date().getTime() > eventRunner.lastEventTime.getTime()) {
+        console.error(`Event ${eventRunner.name} due to finish at ${eventRunner.lastEventTime} still running at ${new Date()}. Stopping now.`)
+        sendEmail(
+          "Overrunning event",
+          `Event ${eventRunner.name} due to finish at ${eventRunner.lastEventTime} still running at ${new Date()}. Stopping now.`
+        )
+        eventRunner.stopEvent(true)
+      }
+    })
     stores.status.reportRanMonitoringTask(new Date())
   }
 }

@@ -97,7 +97,7 @@ function startYoutubeLiveBroadcast(eventId: string): Promise<string> {
   return youtubeClient.updateBroadcastStatus(eventId, "live")
 }
 
-function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
+export function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
   return youtubeClient.updateBroadcastStatus(eventId, "complete")
 }
 

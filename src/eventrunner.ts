@@ -1,5 +1,5 @@
 import { EventStore, RunningEvent, Step } from "./events"
-import { process as processCommand } from './command_processor';
+import { process as processCommand, stopYoutubeLiveBroadcast } from './command_processor';
 import { send as sendEmail } from './email'
 
 export class EventRunner {
@@ -9,6 +9,7 @@ export class EventRunner {
   event: RunningEvent
   running: boolean
   firstEventTime: Date
+  lastEventTime: Date
   timeouts: {
     [stepId: string]: NodeJS.Timeout;
   } = {}
@@ -16,6 +17,7 @@ export class EventRunner {
   constructor(
     name: string,
     firstEventTime: Date,
+    lastEventTime: Date,
     store: EventStore,
     eventId: string,
   ) {
@@ -24,6 +26,7 @@ export class EventRunner {
     this.eventId = eventId
     this.running = false
     this.firstEventTime = firstEventTime
+    this.lastEventTime = lastEventTime
   }
 
   private triggerTime(
@@ -108,7 +111,11 @@ export class EventRunner {
     })
   }
 
-  stopEvent(): void {
+  stopEvent(stopYoutube = false): void {
+    if (stopYoutube) {
+      console.log(`Stopping youtube event ${this.eventId}`)
+      stopYoutubeLiveBroadcast(this.eventId)
+    }
     this.running = false
     Object.values(this.timeouts).forEach((timeout) => {
       clearTimeout(timeout)
