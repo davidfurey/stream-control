@@ -115,7 +115,7 @@ function dailyJob(stores: DataStores) {
         stores.events.getMetadata(eventId).then((metadata) => {
           if ((now - metadata.scheduledStartTime.getTime()) > sevenDays) {
             console.log(`Event ${metadata.name} (${eventId}), is older than 6 days, deleting log`)
-            //stores.events.deleteEvent(eventId)
+            stores.events.deleteEvent(eventId)
           }
         })
       })
