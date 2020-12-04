@@ -125,5 +125,5 @@ export function scheduleTasks(stores: DataStores): void {
   schedule.scheduleJob('0 * * * *',  createAndValidateEvents(stores))
   schedule.scheduleJob('*/5 * * * *',  startIminentEvents(stores))
   schedule.scheduleJob('*/10 * * * *', monitoringJob(stores))
-  schedule.scheduleJob('40 22 * * *', cleanupSpreadsheet(stores))
+  schedule.scheduleJob('7 2 * * *', cleanupSpreadsheet(stores))
 }
