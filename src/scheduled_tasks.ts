@@ -1,6 +1,6 @@
 import schedule from 'node-schedule';
 import { send as sendEmail } from './email';
-import { createEvents, validateEvents } from './server/create-events';
+import { createEvents, promiseSequence, validateEvents } from './server/create-events';
 import { EventRunner } from './eventrunner';
 import { EventStore } from './events';
 import { imminentAutomated, ScheduleStore } from './schedules';
@@ -105,14 +105,16 @@ function cleanupSpreadsheet(stores: DataStores) {
     console.log("Cleaning up spreadsheet")
     const now = new Date().getTime()
     stores.events.getEvents().then((events) => {
-      events.map((eventId) => {
-        stores.events.getMetadata(eventId).then((metadata) => {
+      const requests = events.map((eventId) => {
+        return (): Promise<void> => stores.events.getMetadata(eventId).then((metadata) => {
           if ((now - metadata.scheduledStartTime.getTime()) > duration(7, "days").asMilliseconds()) {
             console.log(`Event ${metadata.name} (${eventId}), is older than 7 days, deleting log`)
-            stores.events.deleteEvent(eventId)
+            return stores.events.deleteEvent(eventId)
           }
+          return Promise.resolve()
         })
       })
+      promiseSequence(requests)
     })
     stores.status.reportRanCleanupTask(new Date())
   }
