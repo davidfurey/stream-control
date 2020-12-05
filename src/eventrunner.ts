@@ -72,10 +72,15 @@ export class EventRunner {
               this.event.steps[step.id - 1].endTime = endTime
               this.event.steps[step.id - 1].endState = "Success"
               this.event.steps[step.id - 1].message = JSON.stringify(err)
-              sendEmail(
-                "Event error",
-                stepFailure(this.name, this.event, step.id, JSON.stringify(err))
-              )
+              try {
+                sendEmail(
+                  "Event error",
+                  stepFailure(this.name, this.event, step.id, JSON.stringify(err))
+                )
+              } catch (e) {
+                console.error("Failed to send email after step failure")
+                console.error(e)
+              }
               return this.store.stepComplete(event.eventId, step.id, endTime, "Failure", JSON.stringify(err))
             })
           },

@@ -69,10 +69,15 @@ function startIminentEvents(stores: DataStores) {
 function checkDuration(name: string, eventTime: Date, duration: Duration): void {
   if ((new Date().getTime() - eventTime.getTime()) > duration.asMilliseconds() * 1.1) {
     console.error(`${name} is overdue`)
-    sendEmail(
-      "Scheduler error",
-      scheduledTaskMissed(name, duration.humanize(), eventTime)
-    )
+    try {
+      sendEmail(
+        "Scheduler error",
+        scheduledTaskMissed(name, duration.humanize(), eventTime)
+      )
+    } catch (e) {
+      console.error("Failed to send email after step overdue event")
+      console.error(e)
+    }
   }
 }
 
@@ -89,10 +94,15 @@ function monitoringJob(stores: DataStores) {
       if (eventRunner.running &&
         new Date().getTime() > eventRunner.lastEventTime.getTime()) {
         console.error(`Event ${eventRunner.name} due to finish at ${eventRunner.lastEventTime} still running at ${new Date()}. Stopping now.`)
-        sendEmail(
-          "Overrunning event",
-          overrunEvent(eventRunner)
-        )
+        try {
+          sendEmail(
+            "Overrunning event",
+            overrunEvent(eventRunner)
+          )
+        } catch (e) {
+          console.error("Failed to send email after step overrunning event")
+          console.error(e)
+        }
         eventRunner.stopEvent(true)
       }
     })
