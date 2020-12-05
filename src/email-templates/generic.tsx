@@ -32,7 +32,8 @@ export function startingEvent(name: string, event: RunningEvent): JSX.Element {
         <tr key={i}>
           <td>{
             step.referenceTime === "Relative" ? "+" + step.offset.toISOString() :
-            new Date(event.scheduledStartTime.getTime() + step.offset.asMilliseconds())
+            (new Date(event.scheduledStartTime.getTime() +
+              step.offset.asMilliseconds())).toISOString()
           }</td>
           <td>{step.action}</td>
           <td>{step.parameter1}</td>
@@ -66,7 +67,8 @@ export function stepFailure(
         <tr key={i} style={{ backgroundColor: i === (stepId - 1) ? "red" : "default"}}>
           <td>{
             step.referenceTime === "Relative" ? "+" + step.offset.toISOString() :
-            new Date(event.scheduledStartTime.getTime() + step.offset.asMilliseconds())
+            new Date(event.scheduledStartTime.getTime() +
+              step.offset.asMilliseconds()).toISOString()
           }</td>
           <td>{step.startTime}</td>
           <td>{step.endTime}</td>
@@ -99,7 +101,8 @@ export function overrunEvent(runner: EventRunner): JSX.Element {
         <tr key={i}>
           <td>{
             step.referenceTime === "Relative" ? "+" + step.offset.toISOString() :
-            new Date(runner.event.scheduledStartTime.getTime() + step.offset.asMilliseconds())
+            new Date(runner.event.scheduledStartTime.getTime() +
+              step.offset.asMilliseconds()).toISOString()
           }</td>
           <td>{step.startTime}</td>
           <td>{step.endTime}</td>
