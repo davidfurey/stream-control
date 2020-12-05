@@ -105,10 +105,10 @@ export class EventRunner {
 
   start(): void {
     this.store.getEvent(this.eventId).then((evt) => {
-      sendEmail("Event preparing", startingEvent(this.name, this.event))
       this.event = evt
       this.running = true
       this.eventLoop()
+      sendEmail("Event preparing", startingEvent(this.name, evt))
     })
   }
 
