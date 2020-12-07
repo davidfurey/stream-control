@@ -20,7 +20,7 @@ export function startingEvent(name: string, event: RunningEvent): JSX.Element {
   return <>
     <h1>Event starting</h1>
     <p>Preparing to stream event {name},
-    which is due to broadcast at {event.scheduledStartTime}</p>
+    which is due to broadcast at {event.scheduledStartTime.toISOString()}</p>
     <h2>Running order</h2>
     <table>
       <tr>

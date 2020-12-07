@@ -1,4 +1,5 @@
-import { startingEvent } from "./generic";
+import { applicationStart, startingEvent } from "./generic";
+
 import ReactDOMServer from 'react-dom/server';
 
 const exampleRunningEvent = {
@@ -15,4 +16,11 @@ describe('Email test suite', () => {
       ReactDOMServer.renderToString(startingEvent("Test Event", exampleRunningEvent))
     ).toEqual("<h1 data-reactroot=\"\">Event starting</h1><p data-reactroot=\"\">Preparing to stream event <!-- -->Test Event<!-- -->, which is due to broadcast at <!-- -->2000-02-01T12:00:00.000Z</p><h2 data-reactroot=\"\">Running order</h2><table data-reactroot=\"\"><tr><th>Time</th><th>Action</th><th>Parameter</th></tr></table>")
   });
+
+  it('Application start email should render to HTML', () => {
+    expect(
+      ReactDOMServer.renderToString(applicationStart())
+    ).toEqual("app start")
+  });
+
 });
