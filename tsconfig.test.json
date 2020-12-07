@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.server",
+  "compilerOptions": {
+      "allowJs": true,
+  }
+}
