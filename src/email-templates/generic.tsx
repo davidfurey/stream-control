@@ -12,7 +12,8 @@ export function applicationStart(): JSX.Element {
 export function scheduledTaskMissed(jobName: string, interval: string, lastRan: Date): JSX.Element {
   return <>
     <h1>Scheduled task missed</h1>
-    <p>Should run task {jobName} every {interval}, but last check was at {lastRan}`</p>
+    <p>Should run task {jobName} every {interval},
+    but last check was at {lastRan.toLocaleString()}`</p>
   </>
 }
 
@@ -70,8 +71,8 @@ export function stepFailure(
             new Date(event.scheduledStartTime.getTime() +
               step.offset.asMilliseconds()).toISOString()
           }</td>
-          <td>{step.startTime}</td>
-          <td>{step.endTime}</td>
+          <td>{step.startTime?.toLocaleTimeString()}</td>
+          <td>{step.endTime?.toLocaleTimeString()}</td>
           <td>{step.action}</td>
           <td>{step.parameter1}</td>
           <td>{step.message}</td>
