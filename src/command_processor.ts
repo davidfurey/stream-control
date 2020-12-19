@@ -1,4 +1,4 @@
-import { setScene, startStreaming, stopStreaming, setSceneCollection } from "./obs"
+import { setScene, startStreaming, stopStreaming, setSceneCollection, isObsError } from "./obs"
 import * as Camera from './camera_control'
 import { YoutubeClientImpl } from './youtube'
 import { paState } from './pa_status'
@@ -103,7 +103,13 @@ export function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
 
 function startOBSStream(_: string): Promise<string> {
   try {
-    return startStreaming().then(() => `Started OBS streaming`)
+    return startStreaming().then(() => `Started OBS streaming`).catch((err) => {
+      if (isObsError(err) && err.error === "streaming already active") {
+        return startStreaming().then(() => `OBS already streaming`)
+      } else {
+        throw err
+      }
+    })
   } catch(err) {
     return Promise.reject(err)
   }
