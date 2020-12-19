@@ -45,10 +45,10 @@ function addThumbnail(
       return videoId
     }).catch((error) => {
       console.error(JSON.stringify(error))
-      return Promise.resolve("error")
+      return videoId
     })
   }
-  return Promise.resolve("error")
+  return Promise.resolve(videoId)
 }
 
 export class YoutubeClientImpl extends YoutubeClient {
