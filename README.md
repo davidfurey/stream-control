@@ -20,5 +20,5 @@ Dev setup
 ---------
 
 * `npm install`
-* `CONFIG_DIR=./config/ npm run watch:server`
-* `CONFIG_DIR=./config/ npm run watch:client`
+* `CONFIG_DIR=./dev-config/ npm run watch:server`
+* `CONFIG_DIR=./dev-config/ npm run watch:client`
