@@ -101,6 +101,15 @@ export function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
   return youtubeClient.updateBroadcastStatus(eventId, "complete")
 }
 
+export function addToPlaylist(parameters: string): Promise<string> {
+  const [eventId, playlistId] = parameters.split(",")
+  if (eventId && eventId !== "" && playlistId && playlistId !== "") {
+    return youtubeClient.addToPlaylist(eventId, playlistId)
+  } else {
+    return Promise.reject("Parameter must be <eventId>,<playlistId>")
+  }
+}
+
 function startOBSStream(_: string): Promise<string> {
   try {
     return startStreaming().then(() => `Started OBS streaming`).catch((err) => {
@@ -138,6 +147,7 @@ const commands: { [command: string]: (s: string) => Promise<string> } = {
   "Preview LiveBroadcast": startYoutubeTestBroadcast,
   "Wait for LiveBroadcast ready": waitForLiveBroadcastTesting,
   "Stop LiveBroadcast": stopYoutubeLiveBroadcast,
+  "Add to playlist": addToPlaylist,
   "Start OBS streaming": startOBSStream,
   "Stop OBS streaming": stopOBSStream,
   "Load scene collection": loadSceneCollection,

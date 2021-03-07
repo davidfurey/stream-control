@@ -316,4 +316,27 @@ export class YoutubeClientImpl extends YoutubeClient {
       })
       )
   }
+
+  addToPlaylist(eventId: string, playlistId: string): Promise<string> {
+    return withYoutube((auth: Common.OAuth2Client) =>
+    google.youtube('v3').playlistItems.insert({
+      "part": [
+        "snippet"
+      ],
+      auth: auth,
+      requestBody: {
+        snippet: {
+          playlistId: playlistId,
+          position: 0,
+          resourceId: {
+            kind: "youtube#video",
+            videoId: eventId
+          }
+        }
+      }
+    }).then((response) => {
+      return response.status.toString()
+    })
+  )
+  }
 }
