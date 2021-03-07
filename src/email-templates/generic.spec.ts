@@ -3,7 +3,6 @@ import { applicationStart, overrunEvent, scheduledTaskMissed, startingEvent, ste
 import ReactDOMServer from 'react-dom/server';
 import { RunningEvent } from "../events";
 import { duration } from 'moment';
-import { EventRunner } from "../eventrunner";
 
 const exampleRunningEvent: RunningEvent = {
   eventId: "123456-evt_id",
