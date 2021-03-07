@@ -97,7 +97,7 @@ function monitoringJob(stores: DataStores) {
         try {
           sendEmail(
             "Overrunning event",
-            overrunEvent(eventRunner)
+            overrunEvent(eventRunner.name, eventRunner.lastEventTime, eventRunner.event)
           )
         } catch (e) {
           console.error("Failed to send email after step overrunning event")

@@ -82,11 +82,16 @@ export function stepFailure(
   </>
 }
 
-export function overrunEvent(runner: EventRunner): JSX.Element {
+export function overrunEvent(
+  name: string,
+  lastEventTime: Date,
+  event: RunningEvent,
+  now: Date = new Date()
+): JSX.Element {
   return <>
     <h1>Event overrun</h1>
-    <p>{runner.name} has overrun.  It was due to finish by {runner.lastEventTime}
-    but is was still running at {Date.now()}. Youtube event has been stopped but
+    <p>{name} has overrun.  It was due to finish by {lastEventTime.toISOString()}
+    but is was still running at {now.toISOString()}. Youtube event has been stopped but
     cameras may still be on.</p>
     <h2>Running order</h2>
     <table>
@@ -98,11 +103,11 @@ export function overrunEvent(runner: EventRunner): JSX.Element {
         <th>Parameter</th>
         <th>Result</th>
       </tr>
-      { runner.event.steps.map((step, i) =>
+      { event.steps.map((step, i) =>
         <tr key={i}>
           <td>{
             step.referenceTime === "Relative" ? "+" + step.offset.toISOString() :
-            new Date(runner.event.scheduledStartTime.getTime() +
+            new Date(event.scheduledStartTime.getTime() +
               step.offset.asMilliseconds()).toISOString()
           }</td>
           <td>{step.startTime}</td>
