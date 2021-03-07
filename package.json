@@ -26,6 +26,7 @@
     "executable_name": "stream-control-auth",
     "user": "stream-control",
     "group": "stream-control",
+    "maintainer": "David Furey <david@furey.me.uk>",
     "templates": {
       "default_variables": "../config/default.template"
     }
