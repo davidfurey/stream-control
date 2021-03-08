@@ -2,6 +2,7 @@ import { setScene, startStreaming, stopStreaming, setSceneCollection, isObsError
 import * as Camera from './camera_control'
 import { YoutubeClientImpl } from './youtube'
 import { paState } from './pa_status'
+import * as Gato from "./gato"
 
 const youtubeClient = new YoutubeClientImpl()
 
@@ -101,12 +102,20 @@ export function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
   return youtubeClient.updateBroadcastStatus(eventId, "complete")
 }
 
+function getParameters(input: string, names: string[]): string[] {
+  const params = input.split(",")
+  if (params.length === names.length) {
+    return params
+  }
+  throw(`Parameter must be ${names.map((s) => `<${s}>`).join(",")}`)
+}
+
 export function addToPlaylist(parameters: string): Promise<string> {
-  const [eventId, playlistId] = parameters.split(",")
-  if (eventId && eventId !== "" && playlistId && playlistId !== "") {
+  try {
+    const [eventId, playlistId] = getParameters(parameters, ["eventId", "playlistId"])
     return youtubeClient.addToPlaylist(eventId, playlistId)
-  } else {
-    return Promise.reject("Parameter must be <eventId>,<playlistId>")
+  } catch(err) {
+    return Promise.reject(err)
   }
 }
 
@@ -137,6 +146,33 @@ function loadScene(scene: string): Promise<string> {
   return setScene(scene).then(() => `Set scene to ${scene}`)
 }
 
+function loadGatoEvent(eventName: string): Promise<string> {
+  return Gato.eventByName(eventName).then((eventId) =>
+    Gato.loadEvent(eventId)
+  )
+}
+
+function componentOnPictureBox(componentName: string): Promise<string> {
+  try {
+    return Gato.displayByName("Picture Box").then((displayId) =>
+      Gato.componentByName("current", componentName).then((componentId) =>
+        Gato.transition(displayId, componentId)
+      )
+    )
+  } catch(err) {
+    return Promise.reject(err)
+  }
+}
+
+function setGatoParameter(parameters: string): Promise<string> {
+  try {
+    const [name, value] = getParameters(parameters, ["name", "value"])
+    return Gato.setParameter("current", name, value)
+  } catch(err) {
+    return Promise.reject(err)
+  }
+}
+
 const commands: { [command: string]: (s: string) => Promise<string> } = {
   "Wait for PA on": waitForPAOn,
   "Wait for PA off": waitForPAOff,
@@ -151,7 +187,10 @@ const commands: { [command: string]: (s: string) => Promise<string> } = {
   "Start OBS streaming": startOBSStream,
   "Stop OBS streaming": stopOBSStream,
   "Load scene collection": loadSceneCollection,
-  "Select scene": loadScene
+  "Select scene": loadScene,
+  "Load Gato event": loadGatoEvent,
+  "Component on Picture box": componentOnPictureBox,
+  "Set Gato parameter": setGatoParameter,
 }
 
 export function process(command: string, arg1: string): Promise<string> {
