@@ -1,7 +1,7 @@
 import { EventStore, RunningEvent, Step } from "./events"
 import { process as processCommand, stopYoutubeLiveBroadcast } from './command_processor';
 import { send as sendEmail } from './email'
-import { startingEvent, stepFailure } from "./email-templates/generic";
+import { genericError, startingEvent, stepFailure } from "./email-templates/generic";
 
 export class EventRunner {
   name: string
@@ -114,6 +114,10 @@ export class EventRunner {
       this.running = true
       this.eventLoop()
       sendEmail("Event preparing", startingEvent(this.name, evt))
+    }).catch((e) => {
+      console.error(`Error starting ${this.name}`)
+      console.error(e)
+      sendEmail("Error starting event", genericError(`Error starting ${this.name}`, JSON.stringify(e, undefined, "  ")))
     })
   }
 
