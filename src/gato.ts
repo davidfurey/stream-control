@@ -22,7 +22,7 @@ export function loadEvent(id: string): Promise<string> {
 }
 
 export function transition(displayId: string, componentId: string): Promise<string> {
-  return fetch(`${apiBase}/displays/${displayId}/load`, {
+  return fetch(`${apiBase}/displays/${displayId}/transistion`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
