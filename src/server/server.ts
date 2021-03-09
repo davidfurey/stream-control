@@ -11,6 +11,7 @@ import { isYoutubeErrorResponse } from '../YoutubeClient';
 import { scheduleTasks } from '../scheduled_tasks';
 import { send as sendEmail} from '../email';
 import { applicationStart, genericError } from '../email-templates/generic';
+import * as ScheduledTasks from '../scheduled_tasks'
 
 let lastUnhandledEmail = 0
 
@@ -42,11 +43,13 @@ const youtubeClient = new CachedYoutubeClient()
 statusStore.reportAppStarted(new Date())
 sendEmail("Starting stream automation", applicationStart())
 
-scheduleTasks({
+const stores = {
   events: eventStore,
   schedules: scheduleStore,
   status: statusStore
-})
+}
+
+scheduleTasks(stores)
 
 app.all('*', (request, response, next) => {
     const start = Date.now();
@@ -111,14 +114,24 @@ app.post('/youtube/:eventId/:status(live|testing|complete)', (req, res) => {
   })
 })
 
-app.post('/general/create-events', (_req, res) => {
+app.post('/automation/create-events', (_req, res) => {
   createEvents(scheduleStore, eventStore)
-  res.send("ACCEPTED")
+  res.status(202).send("Accepted")
 })
 
-app.post('/general/validate-events', (_req, res) => {
+app.post('/automation/validate-events', (_req, res) => {
   validateEvents(scheduleStore, eventStore)
-  res.send("ACCEPTED")
+  res.status(202).send("Accepted")
+})
+
+app.post('/automation/start-events', (_req, res) => {
+  ScheduledTasks.startIminentEvents(stores)
+  res.status(202).send("Accepted")
+})
+
+app.post('/automation/cleanup', (_req, res) => {
+  ScheduledTasks.cleanupSpreadsheet(stores)
+  res.status(202).send("Accepted")
 })
 
 server.listen(port, () => {

@@ -29,7 +29,7 @@ function createAndValidateEvents(stores: DataStores) {
 }
 
 
-function startIminentEvents(stores: DataStores) {
+export function startIminentEvents(stores: DataStores) {
   return (): void => {
     console.log("Check for iminent events")
     stores.schedules.getSchedules().then((schedules) => {
@@ -110,7 +110,7 @@ function monitoringJob(stores: DataStores) {
   }
 }
 
-function cleanupSpreadsheet(stores: DataStores) {
+export function cleanupSpreadsheet(stores: DataStores) {
   return (): void => {
     console.log("Cleaning up spreadsheet")
     const now = new Date().getTime()
