@@ -10,10 +10,19 @@ import { CachedYoutubeClient } from '../CachedYoutubeClient';
 import { isYoutubeErrorResponse } from '../YoutubeClient';
 import { scheduleTasks } from '../scheduled_tasks';
 import { send as sendEmail} from '../email';
-import { applicationStart } from '../email-templates/generic';
+import { applicationStart, genericError } from '../email-templates/generic';
+
+let lastUnhandledEmail = 0
 
 process.on('unhandledRejection', (error) => {
-  console.log(error);
+  console.error("Unhandled rejection")
+  console.error(error)
+  if ((new Date().getTime() - lastUnhandledEmail) > 300000) {
+    lastUnhandledEmail = new Date().getTime()
+    sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
+  } else {
+    console.error(`Skipping email because last email send too recently (${lastUnhandledEmail})`)
+  }
 });
 
 const port = process.env.PORT || 3041;
