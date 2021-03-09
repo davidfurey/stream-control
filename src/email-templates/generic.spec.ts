@@ -1,4 +1,4 @@
-import { applicationStart, overrunEvent, scheduledTaskMissed, startingEvent, stepFailure } from "./generic";
+import { applicationStart, genericError, overrunEvent, scheduledTaskMissed, startingEvent, stepFailure } from "./generic";
 
 import ReactDOMServer from 'react-dom/server';
 import { RunningEvent } from "../events";
@@ -69,5 +69,11 @@ describe('Email test suite', () => {
     expect(
       ReactDOMServer.renderToString(overrunEvent("Event name", new Date(2000, 11, 31, 12, 0, 0), exampleWithSteps, new Date(2000, 12, 1, 12, 0, 0)))
     ).toEqual("<h1 data-reactroot=\"\">Event overrun</h1><p data-reactroot=\"\">Event name<!-- --> has overrun.  It was due to finish by <!-- -->2000-12-31T12:00:00.000Z<!-- -->but is was still running at <!-- -->2001-01-01T12:00:00.000Z<!-- -->. Youtube event has been stopped but cameras may still be on.</p><h2 data-reactroot=\"\">Running order</h2><table data-reactroot=\"\"><tr><th>Scheduled Time</th><th>Start Time</th><th>End Time</th><th>Action</th><th>Parameter</th><th>Result</th></tr><tr><td>2000-12-31T12:00:00.000Z</td><td></td><td></td><td>Some action</td><td>Some param</td><td>Some message</td></tr><tr><td>+P0D</td><td></td><td></td><td>Some action</td><td>Some param</td><td>Some message</td></tr></table>")
+  });
+
+  it('Generic error email should render to HTML', () => {
+    expect(
+      ReactDOMServer.renderToString(genericError("Some error", "Error detail"))
+    ).toEqual("<h1 data-reactroot=\"\">Error occured - <!-- -->Some error</h1><code data-reactroot=\"\">Error detail</code>")
   });
 });

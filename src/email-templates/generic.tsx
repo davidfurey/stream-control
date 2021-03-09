@@ -120,3 +120,13 @@ export function overrunEvent(
     </table>
   </>
 }
+
+export function genericError(
+  name: string,
+  error: string,
+): JSX.Element {
+  return <>
+    <h1>Error occured - {name}</h1>
+    <code>{ error }</code>
+  </>
+}
