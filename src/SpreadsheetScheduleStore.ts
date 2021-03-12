@@ -79,11 +79,11 @@ function eventFromV1(row: any[], index: number): Event {
 }
 
 function isV1(row: any[]): boolean {
-  return row.every((x, i) => headingsV1[i] === x)
+  return headingsV1.every((x, i) => row[i] === x)
 }
 
 function isV2(row: any[]): boolean {
-  return row.every((x, i) => headingsV2[i] === x)
+  return headingsV2.every((x, i) => row[i] === x)
 }
 
 export class SpreadsheetScheduleStore extends ScheduleStore {
@@ -131,6 +131,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
         if (rows?.length && rows?.length > 1) {
           if (!isV1(rows[0]) && !isV2(rows[0])) {
             console.log('Header row invalid.');
+            console.log(rows[0])
             throw "Header row invalid"
           }
           const events = isV2(rows[0]) ?
