@@ -49,7 +49,7 @@ const headingsV2 = [
 
 function eventFromV2(row: any[], index: number): Event {
   return {
-    rowNumber: index,
+    rowNumber: index + 1,
     custom1: row[0],
     custom2: row[1],
     custom3: row[2],
