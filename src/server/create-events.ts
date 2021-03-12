@@ -2,6 +2,7 @@ import { YoutubeClientImpl } from '../youtube'
 import { EventStore } from '../events'
 import { ScheduleStore, creationOverdue, videoCreated, Event } from '../schedules'
 import { fileByPath } from '../drive'
+import fetch from 'node-fetch'
 
 type Thumbnail = {
   mimeType: "image/jpeg" | "image/png";
@@ -62,13 +63,29 @@ export function promiseSequence<T>(fns: (() => Promise<T>)[], result: T[] = []):
 }
 
 function getThumbnail(filename: string): Promise<Thumbnail | null> {
-  return fileByPath(filename).then((buf) => {
-    const thumbnail: Thumbnail = {
-      mimeType: "image/png",
-      data: buf
-    }
-    return thumbnail
-  }).catch(() => null)
+  if (filename.toLowerCase().startsWith("http://") || filename.toLowerCase().startsWith('https://')) {
+    return fetch(filename).then((response) => {
+      if (response.status === 200 && response.headers.get('content-type') === 'image/png') {
+        return response.buffer().then((buf) => {
+          const thumbnail: Thumbnail = {
+            mimeType: "image/png",
+            data: buf
+          }
+          return thumbnail
+        })
+      } else {
+        return null
+      }
+    }).catch(() => null)
+  } else {
+    return fileByPath(filename).then((buf) => {
+      const thumbnail: Thumbnail = {
+        mimeType: "image/png",
+        data: buf
+      }
+      return thumbnail
+    }).catch(() => null)
+  }
 }
 
 function createForSchedule(
