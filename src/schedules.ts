@@ -35,6 +35,7 @@ export interface Event {
   lastestEndTime: Date;
   scheduledActive: boolean;
   lifecycle: Lifecycle;
+  version: number;
 }
 
 export type EventFilter = (evt: Event) => boolean
@@ -49,5 +50,10 @@ export const imminentAutomated = (event: Event): boolean =>
 export abstract class ScheduleStore {
   abstract getSchedules(): Promise<string[]>
   abstract listEvents(scheduleName: string, filter?: EventFilter): Promise<Event[]>
-  abstract setYoutubeId(scheduleName: string, row: number, youTubeId: string): Promise<string>
+  abstract setYoutubeId(
+    scheduleName: string,
+    row: number,
+    youTubeId: string,
+    version: number
+  ): Promise<string>
 }

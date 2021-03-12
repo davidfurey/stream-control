@@ -69,13 +69,17 @@ function eventFromV2(row: any[], index: number): Event {
     firstEventTime: dateFromSerial(row[16]),
     lastestEndTime: dateFromSerial(row[17]),
     scheduledActive: row[18],
-    lifecycle: row[19]
+    lifecycle: row[19],
+    version: 2
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function eventFromV1(row: any[], index: number): Event {
-  return eventFromV2(["", "", "", ""].concat(row), index)
+  return {
+    ...eventFromV2(["", "", "", ""].concat(row), index),
+    version: 1,
+  }
 }
 
 function isV1(row: any[]): boolean {
@@ -104,15 +108,21 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
     })
   }
 
-  setYoutubeId(scheduleName: string, row: number, youTubeId: string): Promise<string> {
+  setYoutubeId(
+    scheduleName: string,
+    row: number,
+    youTubeId: string,
+    version: number
+  ): Promise<string> {
+    const column = version === 1 ? 'K' : 'O'
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
-        range: `schedule/${scheduleName}!K${row+1}`,
+        range: `schedule/${scheduleName}!${column}${row+1}`,
         valueInputOption: 'RAW',
         requestBody: {
-          range: `schedule/${scheduleName}!K${row+1}`,
+          range: `schedule/${scheduleName}!${column}${row+1}`,
           values: [ [ youTubeId ] ],
         }
       }).then((response) => response.statusText)
