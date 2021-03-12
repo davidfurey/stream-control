@@ -28,6 +28,10 @@ export class SpreadsheetEventStore extends EventStore {
     streamId: string,
     scheduledStartTime: Date,
     eventName: string,
+    custom1: string,
+    custom2: string,
+    custom3: string,
+    custom4: string,
     template: string
   ): Promise<void> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
@@ -73,6 +77,21 @@ export class SpreadsheetEventStore extends EventStore {
               [ serialFromDate(scheduledStartTime) ],
               [ eventId],
               [streamId]
+            ],
+          }
+        })
+      }).then(() => {
+        return sheets.spreadsheets.values.update({
+          spreadsheetId: '***REMOVED***',
+          range: `event/${eventId}!F1:F4`,
+          valueInputOption: 'RAW',
+          requestBody: {
+            range: `event/${eventId}!F1:F4`,
+            values: [
+              [ custom1 ],
+              [ custom2 ],
+              [ custom3 ],
+              [ custom4 ]
             ],
           }
         })

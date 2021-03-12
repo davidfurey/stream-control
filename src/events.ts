@@ -46,6 +46,10 @@ export abstract class EventStore {
     streamId: string,
     scheduledStartTime: Date,
     eventName: string,
+    custom1: string,
+    custom2: string,
+    custom3: string,
+    custom4: string,
     template: string
   ): Promise<void>
   abstract getMetadata(eventId: string): Promise<EventMetadata>

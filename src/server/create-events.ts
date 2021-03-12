@@ -36,6 +36,10 @@ function createEvent(
         d.streamId,
         d.scheduledStartTime,
         d.eventName,
+        d.custom1,
+        d.custom2,
+        d.custom3,
+        d.custom4,
         d.template
       )
     } else {

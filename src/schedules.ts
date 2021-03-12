@@ -15,6 +15,10 @@ export type DayOfWeek =
 
 export interface Event {
   rowNumber: number;
+  custom1: string;
+  custom2: string;
+  custom3: string;
+  custom4: string;
   eventName: string;
   thumbnail: string;
   description: string;
