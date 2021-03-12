@@ -47,12 +47,6 @@ const headingsV2 = [
   "Lifecycle"
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function eventFromV1(row: any[], index: number): Event {
-  return this.eventFromV2(["", "", "", ""].concat(row), index)
-}
-
-
 function eventFromV2(row: any[], index: number): Event {
   return {
     rowNumber: index,
@@ -79,12 +73,17 @@ function eventFromV2(row: any[], index: number): Event {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function eventFromV1(row: any[], index: number): Event {
+  return eventFromV2(["", "", "", ""].concat(row), index)
+}
+
 function isV1(row: any[]): boolean {
-  return row.every((x, i) => this.headingsV1[i] === x)
+  return row.every((x, i) => headingsV1[i] === x)
 }
 
 function isV2(row: any[]): boolean {
-  return row.every((x, i) => this.headingsV2[i] === x)
+  return row.every((x, i) => headingsV2[i] === x)
 }
 
 export class SpreadsheetScheduleStore extends ScheduleStore {
