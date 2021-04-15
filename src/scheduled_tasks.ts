@@ -12,10 +12,11 @@ const eventRunners: {
   [eventId: string]: EventRunner;
 } = {}
 
-interface DataStores {
+export interface DataStores {
   events: EventStore;
   schedules: ScheduleStore;
   status: StatusStore;
+  lastUnhandledEmail: number;
 }
 
 function createAndValidateEvents(stores: DataStores) {

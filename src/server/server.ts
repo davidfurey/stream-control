@@ -12,19 +12,7 @@ import { scheduleTasks } from '../scheduled_tasks';
 import { send as sendEmail} from '../email';
 import { applicationStart, genericError } from '../email-templates/generic';
 import * as ScheduledTasks from '../scheduled_tasks'
-
-let lastUnhandledEmail = 0
-
-process.on('unhandledRejection', (error) => {
-  console.error("Unhandled rejection")
-  console.error(error)
-  if ((new Date().getTime() - lastUnhandledEmail) > 300000) {
-    lastUnhandledEmail = new Date().getTime()
-    sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
-  } else {
-    console.error(`Skipping email because last email send too recently (${lastUnhandledEmail})`)
-  }
-});
+import { createHealthchecks } from './healthchecks';
 
 const port = process.env.PORT || 3041;
 
@@ -37,17 +25,33 @@ app.use(compression());
 const eventStore = new SpreadsheetEventStore()
 const scheduleStore = new SpreadsheetScheduleStore()
 const statusStore = new SpreadsheetStatusStore()
-
 const youtubeClient = new CachedYoutubeClient()
 
 statusStore.reportAppStarted(new Date())
-sendEmail("Starting stream automation", applicationStart())
 
 const stores = {
   events: eventStore,
   schedules: scheduleStore,
-  status: statusStore
+  status: statusStore,
+  lastUnhandledEmail: 0
 }
+
+function recentlyUnhandledEmail(): boolean {
+  return (new Date().getTime() - stores.lastUnhandledEmail) > 600000
+}
+
+process.on('unhandledRejection', (error) => {
+  console.error("Unhandled rejection")
+  console.error(error)
+  if (recentlyUnhandledEmail()) {
+    stores.lastUnhandledEmail = new Date().getTime()
+    sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
+  } else {
+    console.error(`Skipping email because last email send too recently (${stores.lastUnhandledEmail})`)
+  }
+});
+
+sendEmail("Starting stream automation", applicationStart())
 
 scheduleTasks(stores)
 
@@ -64,7 +68,22 @@ app.all('*', (request, response, next) => {
 
 app.use(express.static(path.resolve(__dirname, 'public')));
 
-app.get('/healthcheck', (_req, res) => res.send("Ok"));
+const healthchecks = createHealthchecks(stores)
+
+app.get('/healthcheck', (_req, res) => {
+  const checks = Object.fromEntries(healthchecks.map((h) => [h.name, h.check()]))
+  if (Object.values(checks).every((v) => v)) {
+    res.send({
+      result: "healthy",
+      checks
+    })
+  } else {
+    res.status(503).send({
+      result: "unhealthy",
+      checks
+    })
+  }
+});
 
 app.get('/youtube/streams', (_req, res) => {
   youtubeClient.liveStreams().then((streams) => {

@@ -23,6 +23,9 @@ function setCell(ref: string, value: number): Promise<void> {
 }
 
 export class SpreadsheetStatusStore extends StatusStore {
+
+  ranMonitoringTask: Date | null = null
+
   get(): Promise<ReportedStatus> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
@@ -66,6 +69,7 @@ export class SpreadsheetStatusStore extends StatusStore {
     return setCell("B5", serialFromDate(date))
   }
   reportRanMonitoringTask(date: Date): Promise<void> {
+    this.ranMonitoringTask = date
     return setCell("B6", serialFromDate(date))
   }
   reportRanCleanupTask(date: Date): Promise<void> {

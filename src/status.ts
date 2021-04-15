@@ -10,6 +10,7 @@ export interface ReportedStatus {
 }
 
 export abstract class StatusStore {
+  abstract ranMonitoringTask: Date | null
   abstract reportRunningEventsCount(count: number): Promise<void>
   abstract reportScheduledEventsCount(count: number): Promise<void>
   abstract reportUpcomingYoutubeEventsCount(count: number): Promise<void>
