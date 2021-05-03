@@ -84,9 +84,7 @@ export class SpreadsheetEventStore extends EventStore {
           valueInputOption: 'RAW',
           requestBody: {
             range: `event/${eventId}!F1:F${custom.length}`,
-            values: [
-              custom.map((v) => [v])
-            ],
+            values: custom.map((v) => [v]),
           }
         })
       }).then(returnVoid)
