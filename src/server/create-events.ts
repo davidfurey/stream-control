@@ -30,17 +30,14 @@ function createEvent(
     d.streamId,
     d.privacyStatus
   ).then((youtubeId) => {
-    scheduleStore.setYoutubeId(schedule, d.rowNumber, youtubeId, d.version)
+    scheduleStore.setYoutubeId(schedule, d.rowNumber, youtubeId, d.offset)
     if (d.automated) {
       return eventStore.createEvent(
         youtubeId,
         d.streamId,
         d.scheduledStartTime,
         d.eventName,
-        d.custom1,
-        d.custom2,
-        d.custom3,
-        d.custom4,
+        d.custom,
         d.template
       )
     } else {

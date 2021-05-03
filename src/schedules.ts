@@ -1,8 +1,18 @@
 import { Duration } from 'moment';
 import { PrivacyStatus } from './YoutubeClient';
 
-export type Lifecycle =
-  "Creation overdue" | "Okay" | "Missed" | "Past"
+const ALL_LIFECYCLE = <const> [
+  "Creation overdue",
+  "Okay",
+  "Missed",
+  "Past"];
+
+export type Lifecycle = typeof ALL_LIFECYCLE[number]
+
+export function isLivecycle(s: string): s is Lifecycle {
+  return (ALL_LIFECYCLE as ReadonlyArray<string>).includes(s)
+}
+
 
 export type DayOfWeek =
   "Mon" |
@@ -15,15 +25,12 @@ export type DayOfWeek =
 
 export interface Event {
   rowNumber: number;
-  custom1: string;
-  custom2: string;
-  custom3: string;
-  custom4: string;
+  offset: number;
+  custom: string[];
   eventName: string;
   thumbnail: string;
   description: string;
   scheduledStartTime: Date;
-  dayOfWeek: DayOfWeek;
   automated: boolean;
   privacyStatus: PrivacyStatus;
   maxLength: Duration;
@@ -33,9 +40,7 @@ export interface Event {
   scheduledCreationTime: Date;
   firstEventTime: Date;
   lastestEndTime: Date;
-  scheduledActive: boolean;
   lifecycle: Lifecycle;
-  version: number;
 }
 
 export type EventFilter = (evt: Event) => boolean
@@ -54,6 +59,6 @@ export abstract class ScheduleStore {
     scheduleName: string,
     row: number,
     youTubeId: string,
-    version: number
+    offset: number
   ): Promise<string>
 }

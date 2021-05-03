@@ -58,13 +58,20 @@ export class EventRunner {
           () => {
             const startTime = new Date()
             this.event.steps[step.id - 1].startTime = startTime
-            this.store.setStepStartTime(event.eventId, step.id, startTime)
+            this.store.setStepStartTime(event.eventId, step.id, startTime, event.stepsOffset)
             processCommand(step.action, step.parameter1).then((res) => {
               const endTime = new Date()
               this.event.steps[step.id - 1].endTime = endTime
               this.event.steps[step.id - 1].endState = "Success"
               this.event.steps[step.id - 1].message = res
-              return this.store.stepComplete(event.eventId, step.id, endTime, "Success", res)
+              return this.store.stepComplete(
+                event.eventId,
+                step.id,
+                endTime,
+                "Success",
+                res,
+                event.stepsOffset
+              )
             }, (err) => {
               console.error("Failure encountered - stopping")
               this.stopEvent()
@@ -81,7 +88,14 @@ export class EventRunner {
                 console.error("Failed to send email after step failure")
                 console.error(e)
               }
-              return this.store.stepComplete(event.eventId, step.id, endTime, "Failure", JSON.stringify(err))
+              return this.store.stepComplete(
+                event.eventId,
+                step.id,
+                endTime,
+                "Failure",
+                JSON.stringify(err),
+                event.stepsOffset
+              )
             })
           },
           delay > 0 ? delay : 0

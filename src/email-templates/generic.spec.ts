@@ -9,7 +9,8 @@ const exampleRunningEvent: RunningEvent = {
   streamId: "abcdef-stream_id",
   scheduledStartTime: new Date(2000, 11, 31, 12, 0, 0),
   steps: [],
-  running: true
+  running: true,
+  stepsOffset: 7,
 }
 
 const exampleWithSteps: RunningEvent = {

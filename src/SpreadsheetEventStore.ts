@@ -28,10 +28,7 @@ export class SpreadsheetEventStore extends EventStore {
     streamId: string,
     scheduledStartTime: Date,
     eventName: string,
-    custom1: string,
-    custom2: string,
-    custom3: string,
-    custom4: string,
+    custom: string[],
     template: string
   ): Promise<void> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
@@ -83,15 +80,12 @@ export class SpreadsheetEventStore extends EventStore {
       }).then(() => {
         return sheets.spreadsheets.values.update({
           spreadsheetId: '***REMOVED***',
-          range: `event/${eventId}!F1:F4`,
+          range: `event/${eventId}!F1:F${custom.length}`,
           valueInputOption: 'RAW',
           requestBody: {
-            range: `event/${eventId}!F1:F4`,
+            range: `event/${eventId}!F1:F${custom.length}`,
             values: [
-              [ custom1 ],
-              [ custom2 ],
-              [ custom3 ],
-              [ custom4 ]
+              custom.map((v) => [v])
             ],
           }
         })
@@ -106,7 +100,8 @@ export class SpreadsheetEventStore extends EventStore {
           eventId,
           streamId: metadata.streamId,
           scheduledStartTime: metadata.scheduledStartTime,
-          steps,
+          steps: steps.steps,
+          stepsOffset: steps.stepsOffset,
           running: false
         }
         return event
@@ -145,17 +140,20 @@ export class SpreadsheetEventStore extends EventStore {
     })
   }
 
-  private stepsOffset = 7
-
-  setStepStartTime(eventId: string, stepId: number, startTime: Date): Promise<string> {
+  setStepStartTime(
+    eventId: string,
+    stepId: number,
+    startTime: Date,
+    stepsOffset: number
+  ): Promise<string> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
-        range: `event/${eventId}!E${stepId+this.stepsOffset}`,
+        range: `event/${eventId}!E${stepId+stepsOffset}`,
         valueInputOption: 'RAW',
         requestBody: {
-          range: `event/${eventId}!E${stepId+this.stepsOffset}`,
+          range: `event/${eventId}!E${stepId+stepsOffset}`,
           values: [ [ serialFromDate(startTime) ] ],
         }
       }).then((response) => response.statusText)
@@ -167,45 +165,53 @@ export class SpreadsheetEventStore extends EventStore {
     stepId: number,
     endTime: Date,
     state: EndState,
-    message: string
+    message: string,
+    stepsOffset: number
   ): Promise<string> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
         spreadsheetId: '***REMOVED***',
-        range: `event/${eventId}!F${stepId+this.stepsOffset}:H${stepId+this.stepsOffset}`,
+        range: `event/${eventId}!F${stepId+stepsOffset}:H${stepId+stepsOffset}`,
         valueInputOption: 'RAW',
         requestBody: {
-          range: `event/${eventId}!F${stepId+this.stepsOffset}:H${stepId+this.stepsOffset}`,
+          range: `event/${eventId}!F${stepId+stepsOffset}:H${stepId+stepsOffset}`,
           values: [ [ serialFromDate(endTime), state, message ] ],
         }
       }).then((response) => response.statusText)
     })
   }
 
-  private getSteps(eventId: string): Promise<Step[]> {
+  private getSteps(eventId: string): Promise<{ stepsOffset: number; steps: Step[] }> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
         spreadsheetId: '***REMOVED***',
-        range: `event/${eventId}!A${this.stepsOffset + 1}:J`,
+        range: `event/${eventId}!A1:J`,
         valueRenderOption: 'UNFORMATTED_VALUE'
       }).then((res) => {
-        const rows = res.data.values;
-        if (rows?.length && rows?.length > 0) {
-          return rows.map((row, index) => {
-            return {
-              id: index + 1,
-              referenceTime: row[0],
-              offset: duration(row[1] * 24 * 60 * 60 * 1000),
-              action: row[2],
-              parameter1: row[3],
-              startTime: typeof row[4] === "number" ? dateFromSerial(row[4]) : undefined,
-              endTime: typeof row[5] === "number" ? dateFromSerial(row[5]) : undefined,
-              endState: row[6],
-              message: row[7]
-            }
-          });
+        const allRows = res.data.values;
+        const offset = allRows?.findIndex((r) => r[0] === "Reference Time")
+        const stepsOffset = offset === undefined ? 7 : (offset + 1)
+
+        const rows = (allRows || []).slice(stepsOffset)
+        if (rows.length > 0) {
+          return {
+            stepsOffset,
+            steps: rows.map((row, index) => {
+              return {
+                id: index + 1,
+                referenceTime: row[0],
+                offset: duration(row[1] * 24 * 60 * 60 * 1000),
+                action: row[2],
+                parameter1: row[3],
+                startTime: typeof row[4] === "number" ? dateFromSerial(row[4]) : undefined,
+                endTime: typeof row[5] === "number" ? dateFromSerial(row[5]) : undefined,
+                endState: row[6],
+                message: row[7]
+              }
+            })
+          }
         }
         console.log('No data found.');
         throw "No data found"
