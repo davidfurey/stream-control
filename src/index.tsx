@@ -46,7 +46,6 @@ export class Parent extends Component<{}, ParentState> {
       <Container className="mt-4">
         <Row>
           <Col>
-            <h3>Next broadcast</h3>
             { upcoming ?
               <ListGroup className="mb-4">
                 <YoutubeStatusListItem broadcast={upcoming} />
