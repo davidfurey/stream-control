@@ -4,3 +4,7 @@
 html {
   border-top: 2px solid rgb(42, 67, 101);
 }
+
+.btn-group-vertical > .btn:not(:first-child) {
+  margin-top: 0px;
+}

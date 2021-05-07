@@ -13,6 +13,7 @@ import { send as sendEmail} from '../email';
 import { applicationStart, genericError } from '../email-templates/generic';
 import * as ScheduledTasks from '../scheduled_tasks'
 import { createHealthchecks } from './healthchecks';
+import * as Mixer from "../mixer"
 
 if (!Object.fromEntries) {
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -44,7 +45,9 @@ const scheduleStore = new SpreadsheetScheduleStore()
 const statusStore = new SpreadsheetStatusStore()
 const youtubeClient = new CachedYoutubeClient()
 
-statusStore.reportAppStarted(new Date())
+Mixer.init()
+
+//statusStore.reportAppStarted(new Date())
 
 const stores = {
   events: eventStore,
@@ -60,17 +63,17 @@ function recentlyUnhandledEmail(): boolean {
 process.on('unhandledRejection', (error) => {
   console.error("Unhandled rejection")
   console.error(error)
-  if (recentlyUnhandledEmail()) {
-    stores.lastUnhandledEmail = new Date().getTime()
-    sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
-  } else {
-    console.error(`Skipping email because last email send too recently (${stores.lastUnhandledEmail})`)
-  }
+  // if (recentlyUnhandledEmail()) {
+  //   stores.lastUnhandledEmail = new Date().getTime()
+  //   sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
+  // } else {
+  //   console.error(`Skipping email because last email send too recently (${stores.lastUnhandledEmail})`)
+  // }
 });
 
-sendEmail("Starting stream automation", applicationStart())
+//sendEmail("Starting stream automation", applicationStart())
 
-scheduleTasks(stores)
+// scheduleTasks(stores)
 
 app.all('*', (request, response, next) => {
     const start = Date.now();
@@ -84,6 +87,8 @@ app.all('*', (request, response, next) => {
 });
 
 app.use(express.static(path.resolve(__dirname, 'public')));
+
+app.use(express.json())
 
 const healthchecks = createHealthchecks(stores)
 
@@ -168,6 +173,29 @@ app.post('/automation/start-events', (_req, res) => {
 app.post('/automation/cleanup', (_req, res) => {
   ScheduledTasks.cleanupSpreadsheet(stores)
   res.status(202).send("Accepted")
+})
+
+interface VolumeRequest {
+  value: number;
+}
+
+function isVolumeRequest(v: any): v is VolumeRequest {
+  return typeof v === 'object' && typeof v['value'] === 'number'
+}
+
+app.post('/mixer/channels/:id/volume', (req, res) => {
+  const body: unknown = req.body
+  const unitId: unknown = req.params['id']
+  if (isVolumeRequest(body) && typeof unitId === 'string') {
+    Mixer.fadeVolume(unitId, body.value)
+    res.status(202).send("Accepted")
+  } else {
+    res.status(400).send("Invalid request")
+  }
+})
+
+app.get('/mixer/status', (_req, res) => {
+  res.json(Mixer.status())
 })
 
 server.listen(port, () => {

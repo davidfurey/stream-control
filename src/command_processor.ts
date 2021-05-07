@@ -3,6 +3,7 @@ import * as Camera from './camera_control'
 import { YoutubeClientImpl } from './youtube'
 import { paState } from './pa_status'
 import * as Gato from "./gato"
+import * as Mixer from "./mixer"
 
 const youtubeClient = new YoutubeClientImpl()
 
@@ -173,6 +174,11 @@ function setGatoParameter(parameters: string): Promise<string> {
   }
 }
 
+function resetMixer(_: string): Promise<string> {
+  Mixer.reset()
+  return Promise.resolve("Mixer reset")
+}
+
 const commands: { [command: string]: (s: string) => Promise<string> } = {
   "Wait for PA on": waitForPAOn,
   "Wait for PA off": waitForPAOff,
@@ -191,6 +197,7 @@ const commands: { [command: string]: (s: string) => Promise<string> } = {
   "Load Gato event": loadGatoEvent,
   "Component on Picture box": componentOnPictureBox,
   "Set Gato parameter": setGatoParameter,
+  "Reset mixer": resetMixer,
 }
 
 export function process(command: string, arg1: string): Promise<string> {

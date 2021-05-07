@@ -2,6 +2,7 @@ import moment from 'moment';
 import React from 'react';
 import { Badge, ListGroup } from 'react-bootstrap';
 import { LiveBroadcast, LifecycleStatus } from '../YoutubeClient';
+import { BroadcastControl } from './BroadcastControl';
 
 export interface YoutubeStatusProps {
   broadcast: LiveBroadcast;
@@ -40,15 +41,17 @@ function LifeCycleStatusBadge(props: { status: LifecycleStatus }): JSX.Element {
 export function YoutubeStatusListItem(props: YoutubeStatusProps): JSX.Element {
   return <ListGroup.Item>
     <div className="d-flex w-100 justify-content-between align-items-center">
-      { props.broadcast.title }
+      <span>{ props.broadcast.title }<br />
+      <small>{ moment(props.broadcast.scheduledStartTime).format('Do MMMM YYYY @ h:mm a') }</small><br />
+      <LifeCycleStatusBadge status={props.broadcast.status} />
+      </span>
       <span>
-        <LifeCycleStatusBadge status={props.broadcast.status} />
+        <BroadcastControl broadcast={props.broadcast} />
         {/* <StreamStatusBadge
           status={props.stream.status}
           health={props.stream.healthStatus}
         /> */}
       </span>
     </div>
-    <small>{ moment(props.broadcast.scheduledStartTime).format('Do MMMM YYYY @ h:mm a') }</small>
   </ListGroup.Item>
 }

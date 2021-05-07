@@ -176,6 +176,9 @@ const clientConfig = env => {
         '/youtube': {
           target: 'http://localhost:3041',
         },
+        '/mixer': {
+          target: 'http://localhost:3041',
+        },
       }
     }
   }
