@@ -171,6 +171,13 @@ const clientConfig = env => {
       filename: 'js/[name].bundle.[chunkhash].js',
       path: path.resolve(__dirname, 'dist/public'),
     },
+    devServer: {
+      proxy: {
+        '/youtube': {
+          target: 'http://localhost:3041',
+        },
+      }
+    }
   }
 };
 
