@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import * as ReactDOM from "react-dom";
 import { LiveBroadcast } from './YoutubeClient';
 import './style.css';
-import { Container, Row, Col, ListGroup, Button } from 'react-bootstrap';
+import { Container, Row, Col, ListGroup } from 'react-bootstrap';
 import { YoutubeStatusListItem } from './components/YoutubeStatus';
-import { BroadcastControl } from './components/BroadcastControl';
 import { MixerChannel } from './mixer';
 import { AudioChannel } from './audio_channel';
 
@@ -51,14 +50,16 @@ function Parent(_props: {}): JSX.Element {
   }, [])
 
   return (
-    <Container className="mt-2" fluid>
+    <Container className="mt-3" fluid>
       <Row>
         <Col>
-          <ListGroup>
+          <ListGroup className="mb-3">
             { upcoming ?
               <YoutubeStatusListItem broadcast={upcoming} /> :
               <ListGroup.Item>No upcoming broadcasts</ListGroup.Item>
             }
+          </ListGroup>
+          <ListGroup>
             { mixer.length > 0 ?
               <ListGroup.Item>
               { mixer.map((c) =>

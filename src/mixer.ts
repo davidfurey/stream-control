@@ -47,7 +47,6 @@ function doFade(): void {
         return isFadingInProgress
       } else {
         const delta = currentVolume < desiredVolume ? 0.02 : -0.02
-        console.log(`${desiredVolume}, ${currentVolume}`)
         const newVolume = Math.abs(desiredVolume - currentVolume) < 0.02 ?
           desiredVolume : currentVolume + delta
         sendVolume(channel, newVolume)

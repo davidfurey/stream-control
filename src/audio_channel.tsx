@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './style.css';
-import { Button, ButtonGroup } from 'react-bootstrap';
+import { Badge, Button, Card, ListGroup } from 'react-bootstrap';
 
 export function AudioChannel(props: {
   name: string;
@@ -31,19 +31,25 @@ export function AudioChannel(props: {
     })
   }
 
-  return <ButtonGroup vertical size="sm" className="mr-2">
-    <Button variant="info" as="div" style={{pointerEvents: "none"}}>{ props.name }</Button>
+  return <Card style={{width: "7em"}} className="float-left mr-2 bg-secondary">
+    <Card.Header className="col-form-label-sm px-1 py-1 bg-primary text-center">{ props.name }</Card.Header>
+    <ListGroup variant="flush">
+    <ListGroup.Item className="text-center border-0 pt-2 pb-0">
+    { props.muted ?
+      <Badge variant={"danger"} style={{opacity: flashing && props.flash ? "0.65" : "1"}}>Disabled</Badge> :
+      <Badge variant="success">Active</Badge>
+    }
+    </ListGroup.Item>
+    <ListGroup.Item className="text-center border-0 p-2">
     {props.muted ?
-      <Button variant="secondary" onClick={(): void => { fade(1.0) }} style={{minWidth: "5.5em"}}>
+      <Button size="sm" variant="secondary" onClick={(): void => { fade(1.0) }} style={{minWidth: "5.5em"}}>
         Unmute
       </Button> :
-      <Button variant="secondary" onClick={(): void => { fade(0) }} style={{minWidth: "5.5em"}}>
+      <Button size="sm" variant="secondary" onClick={(): void => { fade(0) }} style={{minWidth: "5.5em"}}>
         Mute
       </Button>
     }
-    { props.muted ?
-      <Button variant={"danger"} as="div" style={{pointerEvents: "none", opacity: flashing && props.flash ? "0.65" : "1"}}>Disabled</Button> :
-      <Button variant="success" as="div" style={{pointerEvents: "none"}}>Active</Button>
-    }
-  </ButtonGroup>
+    </ListGroup.Item>
+    </ListGroup>
+  </Card>
 }
