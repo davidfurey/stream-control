@@ -47,7 +47,7 @@ const youtubeClient = new CachedYoutubeClient()
 
 Mixer.init()
 
-//statusStore.reportAppStarted(new Date())
+statusStore.reportAppStarted(new Date())
 
 const stores = {
   events: eventStore,
@@ -63,17 +63,17 @@ function recentlyUnhandledEmail(): boolean {
 process.on('unhandledRejection', (error) => {
   console.error("Unhandled rejection")
   console.error(error)
-  // if (recentlyUnhandledEmail()) {
-  //   stores.lastUnhandledEmail = new Date().getTime()
-  //   sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
-  // } else {
-  //   console.error(`Skipping email because last email send too recently (${stores.lastUnhandledEmail})`)
-  // }
+  if (recentlyUnhandledEmail()) {
+    stores.lastUnhandledEmail = new Date().getTime()
+    sendEmail("Error - unhandled rejection", genericError("Unhandled rejection starting", JSON.stringify(error, undefined, "  ")))
+  } else {
+    console.error(`Skipping email because last email send too recently (${stores.lastUnhandledEmail})`)
+  }
 });
 
-//sendEmail("Starting stream automation", applicationStart())
+sendEmail("Starting stream automation", applicationStart())
 
-// scheduleTasks(stores)
+scheduleTasks(stores)
 
 app.all('*', (request, response, next) => {
     const start = Date.now();
