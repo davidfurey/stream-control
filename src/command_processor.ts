@@ -106,7 +106,7 @@ export function stopYoutubeLiveBroadcast(eventId: string): Promise<string> {
 function getParameters(input: string, names: string[]): string[] {
   const params = input.split(",")
   if (params.length === names.length) {
-    return params
+    return params.map((p) => decodeURIComponent(p))
   }
   throw(`Parameter must be ${names.map((s) => `<${s}>`).join(",")}`)
 }
