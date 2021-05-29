@@ -9,11 +9,18 @@ function returnVoid(): void {
 }
 
 export class SpreadsheetEventStore extends EventStore {
+  spreadsheetId: string
+
+  constructor(spreadsheetId: string) {
+    super()
+    this.spreadsheetId = spreadsheetId
+  }
+
   setScheduledStartTime(eventId: string, scheduledStartTime: Date): Promise<string> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `event/${eventId}!B2`,
         valueInputOption: 'RAW',
         requestBody: {
@@ -34,7 +41,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         ranges: [],
         includeGridData: false
       }).then((response) => {
@@ -48,7 +55,7 @@ export class SpreadsheetEventStore extends EventStore {
           throw "Request did not return number of sheets"
         }
         return sheets.spreadsheets.batchUpdate({
-          spreadsheetId: '***REMOVED***',
+          spreadsheetId: this.spreadsheetId,
           requestBody: {
             requests: [
               {
@@ -64,7 +71,7 @@ export class SpreadsheetEventStore extends EventStore {
         })
       }).then(() => {
         return sheets.spreadsheets.values.update({
-          spreadsheetId: '***REMOVED***',
+          spreadsheetId: this.spreadsheetId,
           range: `event/${eventId}!B1:B4`,
           valueInputOption: 'RAW',
           requestBody: {
@@ -79,7 +86,7 @@ export class SpreadsheetEventStore extends EventStore {
         })
       }).then(() => {
         return sheets.spreadsheets.values.update({
-          spreadsheetId: '***REMOVED***',
+          spreadsheetId: this.spreadsheetId,
           range: `event/${eventId}!F1:F${custom.length}`,
           valueInputOption: 'RAW',
           requestBody: {
@@ -111,7 +118,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         ranges: [],
         includeGridData: false
       }).then((response) => {
@@ -119,7 +126,7 @@ export class SpreadsheetEventStore extends EventStore {
         const sheetId = eventSheet?.properties?.sheetId
         if (sheetId) {
           return sheets.spreadsheets.batchUpdate({
-            spreadsheetId: '***REMOVED***',
+            spreadsheetId: this.spreadsheetId,
             requestBody: {
               requests: [
                 {
@@ -147,7 +154,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `event/${eventId}!E${stepId+stepsOffset}`,
         valueInputOption: 'RAW',
         requestBody: {
@@ -169,7 +176,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `event/${eventId}!F${stepId+stepsOffset}:H${stepId+stepsOffset}`,
         valueInputOption: 'RAW',
         requestBody: {
@@ -184,7 +191,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `event/${eventId}!A1:J`,
         valueRenderOption: 'UNFORMATTED_VALUE'
       }).then((res) => {
@@ -222,7 +229,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `event/${eventId}!B1:B4`,
         valueRenderOption: 'UNFORMATTED_VALUE'
       }).then((res) => {
@@ -244,7 +251,7 @@ export class SpreadsheetEventStore extends EventStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         ranges: [],
         includeGridData: false,
       }).then((response) => {

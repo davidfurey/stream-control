@@ -77,11 +77,18 @@ const columnIndexToA1Notation = (index: number): string => {
 
 export class SpreadsheetScheduleStore extends ScheduleStore {
 
+  spreadsheetId: string
+
+  constructor(spreadsheetId: string) {
+    super()
+    this.spreadsheetId = spreadsheetId
+  }
+
   getSchedules(): Promise<string[]> {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         ranges: [],
         includeGridData: false,
       }).then((response) => {
@@ -103,7 +110,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.update({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `schedule/${scheduleName}!${column}${row+1}`,
         valueInputOption: 'RAW',
         requestBody: {
@@ -118,7 +125,7 @@ export class SpreadsheetScheduleStore extends ScheduleStore {
     return withSpreadsheets((auth: Common.OAuth2Client) => {
       const sheets = google.sheets({version: 'v4', auth});
       return sheets.spreadsheets.values.get({
-        spreadsheetId: '***REMOVED***',
+        spreadsheetId: this.spreadsheetId,
         range: `schedule/${scheduleName}!A1:Z`,
         valueRenderOption: 'UNFORMATTED_VALUE'
       }).then((res) => {

@@ -34,15 +34,17 @@ if (!Object.fromEntries) {
 
 const port = process.env.PORT || 3041;
 
+const spreadsheetId = process.env.SPREADSHEET || "";
+
 const app = express();
 
 const server = http.createServer(app);
 
 app.use(compression());
 
-const eventStore = new SpreadsheetEventStore()
-const scheduleStore = new SpreadsheetScheduleStore()
-const statusStore = new SpreadsheetStatusStore()
+const eventStore = new SpreadsheetEventStore(spreadsheetId)
+const scheduleStore = new SpreadsheetScheduleStore(spreadsheetId)
+const statusStore = new SpreadsheetStatusStore(spreadsheetId)
 const youtubeClient = new CachedYoutubeClient()
 
 Mixer.init()
