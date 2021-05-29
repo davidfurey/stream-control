@@ -1,8 +1,10 @@
 Stream control
 ==============
 
-Automatically start streaming based on events.  Also allow manual control of
-starting/stopping Youtube events without giving full control of Youtube console
+Application to automate Youtube live streams.  It will create and update Youtube live broadcasts based on data in Google Sheets,
+and can also control OBS, GATO and Youtube based on a schedule or external events.
+
+Additionally, provides manual controls to start/stop Youtube events without giving full control of Youtube console to your team.
 
 Packaging
 ---------
