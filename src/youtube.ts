@@ -327,7 +327,6 @@ export class YoutubeClientImpl extends YoutubeClient {
       requestBody: {
         snippet: {
           playlistId: playlistId,
-          position: 0,
           resourceId: {
             kind: "youtube#video",
             videoId: eventId
